@@ -1,274 +1,1505 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Daily Report Generator</title>
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>REL-FA Weekly Report Generator</title>
 
   <link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
-  <header class="topbar">
 
-    <div>
-      <h1>Daily Report Generator</h1>
-      <p>Create professional daily reports from your business data.</p>
+<header class="topbar">
+
+  <div>
+
+    <h1>REL-FA Weekly Report Generator</h1>
+
+    <p>
+      Failure Analysis &amp; Reliability weekly performance report
+    </p>
+
+  </div>
+
+
+  <div class="header-actions">
+
+    <button
+      class="btn secondary"
+      onclick="clearReport()"
+    >
+      Clear
+    </button>
+
+    <button
+      class="btn primary"
+      onclick="generateReport()"
+    >
+      Generate Report
+    </button>
+
+  </div>
+
+</header>
+
+
+
+<main class="container">
+
+
+  <!-- REPORT INFORMATION -->
+
+  <section class="card">
+
+    <div class="section-title">
+
+      <h2>Report Information</h2>
+
+      <p>
+        Enter the reporting period and general information.
+      </p>
+
     </div>
 
-    <div class="header-actions">
-      <button class="btn secondary" onclick="clearReport()">Clear</button>
-      <button class="btn primary" onclick="generateReport()">
-        Generate Report
-      </button>
+
+    <div class="form-grid">
+
+
+      <div class="form-group">
+
+        <label for="reportPeriod">
+          Reporting Period
+        </label>
+
+        <input
+          type="text"
+          id="reportPeriod"
+          value="WW40"
+          placeholder="Example: WW40"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="reportDate">
+          Report Date
+        </label>
+
+        <input
+          type="date"
+          id="reportDate"
+        >
+
+      </div>
+
+
+      <div class="form-group full-width">
+
+        <label for="reportTitle">
+          Report Title
+        </label>
+
+        <input
+          type="text"
+          id="reportTitle"
+          value="Weekly Report (REL-FA)"
+        >
+
+      </div>
+
+
     </div>
 
-  </header>
+  </section>
 
 
-  <main class="container">
 
-    <!-- REPORT INFORMATION -->
-    <section class="card">
+  <!-- WORK AREAS -->
 
-      <div class="section-title">
-        <h2>Report Information</h2>
-      </div>
+  <section class="card">
 
-      <div class="form-grid">
+    <div class="section-header">
 
-        <div class="form-group">
-          <label for="reportDate">Report Date</label>
-          <input type="date" id="reportDate">
-        </div>
+      <div>
 
-        <div class="form-group">
-          <label for="reportTitle">Report Title</label>
-
-          <input
-            type="text"
-            id="reportTitle"
-            value="Daily Operations Report"
-            placeholder="Enter report title"
-          >
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- KPI SECTION -->
-    <section class="card">
-
-      <div class="section-header">
-
-        <div>
-          <h2>Key Performance Indicators</h2>
-          <p>Enter today's important numbers.</p>
-        </div>
-
-        <button class="btn small" onclick="addKPI()">
-          + Add KPI
-        </button>
-
-      </div>
-
-
-      <div id="kpiContainer">
-
-        <div class="kpi-row">
-
-          <input
-            type="text"
-            class="kpi-name"
-            placeholder="KPI name"
-            value="Revenue"
-          >
-
-          <input
-            type="text"
-            class="kpi-value"
-            placeholder="Actual"
-          >
-
-          <input
-            type="text"
-            class="kpi-target"
-            placeholder="Target"
-          >
-
-          <button
-            class="remove-btn"
-            onclick="removeKPI(this)"
-          >
-            ×
-          </button>
-
-        </div>
-
-
-        <div class="kpi-row">
-
-          <input
-            type="text"
-            class="kpi-name"
-            placeholder="KPI name"
-            value="Orders"
-          >
-
-          <input
-            type="text"
-            class="kpi-value"
-            placeholder="Actual"
-          >
-
-          <input
-            type="text"
-            class="kpi-target"
-            placeholder="Target"
-          >
-
-          <button
-            class="remove-btn"
-            onclick="removeKPI(this)"
-          >
-            ×
-          </button>
-
-        </div>
-
-
-        <div class="kpi-row">
-
-          <input
-            type="text"
-            class="kpi-name"
-            placeholder="KPI name"
-            value="Customers"
-          >
-
-          <input
-            type="text"
-            class="kpi-value"
-            placeholder="Actual"
-          >
-
-          <input
-            type="text"
-            class="kpi-target"
-            placeholder="Target"
-          >
-
-          <button
-            class="remove-btn"
-            onclick="removeKPI(this)"
-          >
-            ×
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- DAILY NOTES -->
-    <section class="card">
-
-      <div class="section-title">
-
-        <h2>Daily Notes & Information</h2>
+        <h2>REL-FA Work Areas</h2>
 
         <p>
-          Paste your raw notes, activities, problems,
-          events, sales information, etc.
+          Update the activities performed during the week.
         </p>
 
       </div>
 
 
-      <textarea
-        id="dailyNotes"
-        placeholder="Example:
+      <button
+        class="btn small"
+        onclick="addWorkArea()"
+      >
+        + Add Work Area
+      </button>
 
-Sales were stronger than yesterday.
-Three major customers placed orders.
-One shipment was delayed.
-The marketing campaign generated more leads.
-We had a staffing shortage in the afternoon.
-"
-      ></textarea>
-
-    </section>
+    </div>
 
 
-    <!-- REPORT PREVIEW -->
-    <section class="card report-card">
+    <div id="workAreaContainer">
 
-      <div class="section-header">
 
-        <div>
-          <h2>Report Preview</h2>
+      <!-- ============================= -->
+      <!-- WORK AREA 1 -->
+      <!-- ============================= -->
 
-          <p>
-            Your generated report will appear here.
-          </p>
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">
+            1
+          </div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="Failure Analysis Support for Capstone Projects"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea
+            class="description"
+          >Coordinate SEM, EDX, TOF-SIMS, VK3000 and external analyses. Manage sample submission, report tracking and defect investigations.</textarea>
+
         </div>
 
 
-        <div class="report-actions">
+        <div class="three-column">
 
-          <button
-            class="btn small"
-            onclick="copyReport()"
-          >
-            Copy
-          </button>
+          <div class="form-group">
 
-          <button
-            class="btn small"
-            onclick="printReport()"
-          >
-            Print / PDF
-          </button>
+            <label>Deadline</label>
+
+            <select class="deadline">
+
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>
+                🟢 Green
+              </option>
+
+              <option value="Yellow">
+                🟡 Yellow
+              </option>
+
+              <option value="Red">
+                🔴 Red
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
 
         </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>What</label>
+
+            <textarea
+              class="what"
+              placeholder="What was accomplished?"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>How</label>
+
+            <textarea
+              class="how"
+              placeholder="How was it accomplished?"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Next Step</label>
+
+            <textarea
+              class="next-step"
+              placeholder="What happens next?"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 2 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">2</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="Particle & Stain Investigation"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Characterize contamination and stain-related findings using EDX, OPTIR and SEM.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea
+              class="what"
+              placeholder="What was accomplished?"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea
+              class="how"
+              placeholder="How was it accomplished?"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea
+              class="next-step"
+              placeholder="What happens next?"
+            ></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 3 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">3</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="ARC Abnormality Investigation (Proj 607 & Proj 638)"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Characterize ARC abnormal conditions through microscopy, SEM and TOF-SIMS.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green">🟢 Green</option>
+
+              <option value="Yellow" selected>
+                🟡 Yellow
+              </option>
+
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 4 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">4</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="BLT & Bondline Evaluation"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Support BLT verification and bondline damage assessment for Capstone and Z50 projects.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 5 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">5</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="Metrology & Measurement Support"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Perform dimensional and thickness measurements using VK3000, Dektak, VMM and Profilometer.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 6 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">6</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="Failure Analysis Report Management"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Ensure timely closure and communication of FA reports.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 7 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">7</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="Cross Functional & Laboratory Coordination"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Coordinate activities with SEM, EDX, FIB, TOF-SIMS, OPTIR and external laboratories.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option>P1</option>
+              <option selected>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 8 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">8</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="General REL-FA Support"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Support ongoing FA and analytical activities across Process Integration projects.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option>P1</option>
+              <option selected>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 9 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">9</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="Reliability Sample Coordination Support"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Support reliability testing activities by receiving, verifying and transferring samples from Kulim SKL Lab to Development Line for qualification testing.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+              <option selected>Weekly</option>
+              <option>Ongoing</option>
+              <option>Custom</option>
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option selected>P1</option>
+              <option>P2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+
+      <!-- ============================= -->
+      <!-- WORK AREA 10 -->
+      <!-- ============================= -->
+
+      <article class="work-area">
+
+        <div class="work-area-header">
+
+          <div class="work-number">10</div>
+
+          <div class="work-title">
+
+            <input
+              class="work-name"
+              value="EHS Sustainability Report Coordination"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>KPI Description</label>
+
+          <textarea class="description">Support departmental EHS sustainability KPI reporting and submission activities.</textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+
+            <label>Deadline</label>
+
+            <select class="deadline">
+
+              <option>Weekly</option>
+
+              <option selected>
+                Ongoing
+              </option>
+
+              <option>Custom</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select class="status">
+
+              <option value="Green" selected>🟢 Green</option>
+              <option value="Yellow">🟡 Yellow</option>
+              <option value="Red">🔴 Red</option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Priority</label>
+
+            <select class="priority">
+
+              <option>P1</option>
+
+              <option selected>
+                P2
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Weekly Activity / Raw Notes</label>
+
+          <textarea
+            class="raw-notes"
+            placeholder="Enter what happened this week..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="three-column">
+
+          <div class="form-group">
+            <label>What</label>
+            <textarea class="what"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>How</label>
+            <textarea class="how"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Next Step</label>
+            <textarea class="next-step"></textarea>
+          </div>
+
+        </div>
+
+
+        <button
+          class="remove-work-area"
+          onclick="removeWorkArea(this)"
+        >
+          Remove Work Area
+        </button>
+
+      </article>
+
+
+    </div>
+
+  </section>
+
+
+
+  <!-- REPORT PREVIEW -->
+
+  <section class="card report-card">
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>Report Preview</h2>
+
+        <p>
+          The final formatted weekly report will appear here.
+        </p>
 
       </div>
 
 
-      <div id="reportPreview" class="report-preview">
+      <div class="report-actions">
 
-        <div class="empty-state">
+        <button
+          class="btn small"
+          onclick="copyReport()"
+        >
+          Copy
+        </button>
 
-          <div class="empty-icon">📊</div>
-
-          <h3>No report generated yet</h3>
-
-          <p>
-            Enter your daily information above and click
-            <strong>Generate Report</strong>.
-          </p>
-
-        </div>
+        <button
+          class="btn small"
+          onclick="printReport()"
+        >
+          Print / PDF
+        </button>
 
       </div>
 
-    </section>
-
-  </main>
+    </div>
 
 
-  <footer>
-    <p>Daily Report Generator</p>
-  </footer>
+    <div
+      id="reportPreview"
+      class="report-preview"
+    >
+
+      <div class="empty-state">
+
+        <div class="empty-icon">
+          📋
+        </div>
+
+        <h3>
+          No report generated yet
+        </h3>
+
+        <p>
+          Update your weekly activities and click
+          <strong>Generate Report</strong>.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
 
 
-  <script src="app.js"></script>
+</main>
+
+
+
+<footer>
+
+  <p>
+    REL-FA Weekly Report Generator
+  </p>
+
+</footer>
+
+
+
+<script src="app.js"></script>
+
 
 </body>
+
 </html>
