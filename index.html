@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Daily Report Generator</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+
+    <div>
+      <h1>Daily Report Generator</h1>
+      <p>Create professional daily reports from your business data.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn secondary" onclick="clearReport()">Clear</button>
+      <button class="btn primary" onclick="generateReport()">
+        Generate Report
+      </button>
+    </div>
+
+  </header>
+
+
+  <main class="container">
+
+    <!-- REPORT INFORMATION -->
+    <section class="card">
+
+      <div class="section-title">
+        <h2>Report Information</h2>
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="reportDate">Report Date</label>
+          <input type="date" id="reportDate">
+        </div>
+
+        <div class="form-group">
+          <label for="reportTitle">Report Title</label>
+
+          <input
+            type="text"
+            id="reportTitle"
+            value="Daily Operations Report"
+            placeholder="Enter report title"
+          >
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- KPI SECTION -->
+    <section class="card">
+
+      <div class="section-header">
+
+        <div>
+          <h2>Key Performance Indicators</h2>
+          <p>Enter today's important numbers.</p>
+        </div>
+
+        <button class="btn small" onclick="addKPI()">
+          + Add KPI
+        </button>
+
+      </div>
+
+
+      <div id="kpiContainer">
+
+        <div class="kpi-row">
+
+          <input
+            type="text"
+            class="kpi-name"
+            placeholder="KPI name"
+            value="Revenue"
+          >
+
+          <input
+            type="text"
+            class="kpi-value"
+            placeholder="Actual"
+          >
+
+          <input
+            type="text"
+            class="kpi-target"
+            placeholder="Target"
+          >
+
+          <button
+            class="remove-btn"
+            onclick="removeKPI(this)"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="kpi-row">
+
+          <input
+            type="text"
+            class="kpi-name"
+            placeholder="KPI name"
+            value="Orders"
+          >
+
+          <input
+            type="text"
+            class="kpi-value"
+            placeholder="Actual"
+          >
+
+          <input
+            type="text"
+            class="kpi-target"
+            placeholder="Target"
+          >
+
+          <button
+            class="remove-btn"
+            onclick="removeKPI(this)"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="kpi-row">
+
+          <input
+            type="text"
+            class="kpi-name"
+            placeholder="KPI name"
+            value="Customers"
+          >
+
+          <input
+            type="text"
+            class="kpi-value"
+            placeholder="Actual"
+          >
+
+          <input
+            type="text"
+            class="kpi-target"
+            placeholder="Target"
+          >
+
+          <button
+            class="remove-btn"
+            onclick="removeKPI(this)"
+          >
+            ×
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- DAILY NOTES -->
+    <section class="card">
+
+      <div class="section-title">
+
+        <h2>Daily Notes & Information</h2>
+
+        <p>
+          Paste your raw notes, activities, problems,
+          events, sales information, etc.
+        </p>
+
+      </div>
+
+
+      <textarea
+        id="dailyNotes"
+        placeholder="Example:
+
+Sales were stronger than yesterday.
+Three major customers placed orders.
+One shipment was delayed.
+The marketing campaign generated more leads.
+We had a staffing shortage in the afternoon.
+"
+      ></textarea>
+
+    </section>
+
+
+    <!-- REPORT PREVIEW -->
+    <section class="card report-card">
+
+      <div class="section-header">
+
+        <div>
+          <h2>Report Preview</h2>
+
+          <p>
+            Your generated report will appear here.
+          </p>
+        </div>
+
+
+        <div class="report-actions">
+
+          <button
+            class="btn small"
+            onclick="copyReport()"
+          >
+            Copy
+          </button>
+
+          <button
+            class="btn small"
+            onclick="printReport()"
+          >
+            Print / PDF
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div id="reportPreview" class="report-preview">
+
+        <div class="empty-state">
+
+          <div class="empty-icon">📊</div>
+
+          <h3>No report generated yet</h3>
+
+          <p>
+            Enter your daily information above and click
+            <strong>Generate Report</strong>.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+    <p>Daily Report Generator</p>
+  </footer>
+
+
+  <script src="app.js"></script>
+
+</body>
+</html>
