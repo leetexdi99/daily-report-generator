@@ -1,604 +1,563 @@
+/* =========================================
+   REL-FA WEEKLY REPORT GENERATOR
+   ========================================= */
+
 * {
   box-sizing: border-box;
 }
 
-:root {
-  --primary: #155eef;
-  --primary-dark: #004eeb;
-  --background: #f5f7fa;
-  --card: #ffffff;
-  --text: #172033;
-  --muted: #667085;
-  --border: #d9dee8;
-  --green: #16a34a;
-  --yellow: #d97706;
-  --red: #dc2626;
-  --danger-bg: #fff1f2;
-}
-
 body {
   margin: 0;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Arial,
-    sans-serif;
-
-  background: var(--background);
-  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f7fb;
+  color: #1f2937;
+  line-height: 1.5;
 }
 
 
-/* =========================
-   TOP BAR
-========================= */
+/* =========================================
+   HEADER
+   ========================================= */
 
-.topbar {
-  background: #ffffff;
-  border-bottom: 1px solid var(--border);
+.app-header {
+  background: linear-gradient(
+    135deg,
+    #0f3d68,
+    #1769aa
+  );
 
-  padding: 22px 5%;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  gap: 20px;
-}
-
-.topbar h1 {
-  margin: 0 0 6px;
-  font-size: 25px;
-  font-weight: 700;
-}
-
-.topbar p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-
-/* =========================
-   BUTTONS
-========================= */
-
-.btn {
-  border: none;
-  border-radius: 8px;
-
-  padding: 11px 18px;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.btn.primary {
-  background: var(--primary);
   color: white;
+  padding: 32px 20px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 }
 
-.btn.primary:hover {
-  background: var(--primary-dark);
+.header-content {
+  max-width: 1200px;
+  margin: auto;
 }
 
-.btn.secondary {
-  background: #eef1f5;
-  color: #344054;
+.app-header h1 {
+  margin: 0 0 6px;
+  font-size: 30px;
 }
 
-.btn.secondary:hover {
-  background: #e4e7ec;
-}
-
-.btn.small {
-  padding: 8px 13px;
-  background: #eef4ff;
-  color: var(--primary);
-}
-
-.btn.small:hover {
-  background: #dbe8ff;
+.app-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 15px;
 }
 
 
-/* =========================
+/* =========================================
    MAIN CONTAINER
-========================= */
+   ========================================= */
 
 .container {
   width: min(1200px, 94%);
-  margin: 28px auto;
+  margin: 30px auto 50px;
 }
 
 
-/* =========================
+/* =========================================
    CARDS
-========================= */
+   ========================================= */
 
 .card {
-  background: var(--card);
-
-  border: 1px solid var(--border);
+  background: white;
   border-radius: 12px;
-
-  padding: 24px;
-
-  margin-bottom: 20px;
+  padding: 26px;
+  margin-bottom: 24px;
 
   box-shadow:
-    0 2px 5px rgba(16, 24, 40, 0.04);
-}
+    0 2px 10px rgba(15, 61, 104, 0.08);
 
-.card h2 {
-  margin: 0 0 6px;
-  font-size: 19px;
-}
-
-.card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-
-/* =========================
-   SECTION HEADERS
-========================= */
-
-.section-title {
-  margin-bottom: 20px;
+  border: 1px solid #e5eaf0;
 }
 
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-bottom: 22px;
+}
 
-  gap: 20px;
+.section-header h2 {
+  margin: 0 0 5px;
+  color: #0f3d68;
+  font-size: 21px;
+}
 
-  margin-bottom: 20px;
+.section-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
 }
 
 
-/* =========================
+/* =========================================
    FORM
-========================= */
+   ========================================= */
 
-.form-grid {
+.three-column {
   display: grid;
-
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+    repeat(3, 1fr);
 
   gap: 18px;
-
-  margin-top: 18px;
-}
-
-.full-width {
-  grid-column: 1 / -1;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-
-  gap: 7px;
-
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-label {
-  font-size: 13px;
-  font-weight: 650;
-  color: #344054;
+.form-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #334155;
 }
 
 input,
-textarea,
-select {
+select,
+textarea {
   width: 100%;
-
-  border: 1px solid var(--border);
-  border-radius: 8px;
-
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
   padding: 11px 12px;
-
   font-family: inherit;
   font-size: 14px;
-
-  color: var(--text);
-  background: #ffffff;
-
-  outline: none;
-
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  background: white;
+  color: #1f2937;
 }
 
 input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--primary);
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2563eb;
 
   box-shadow:
-    0 0 0 3px rgba(21, 94, 239, 0.10);
+    0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 textarea {
-  min-height: 100px;
+  min-height: 110px;
   resize: vertical;
 }
 
 
-/* =========================
-   WORK AREA
-========================= */
+/* =========================================
+   EXCEL UPLOAD
+   ========================================= */
 
-#workAreaContainer {
+.upload-area {
+  border: 2px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #f8fafc;
+  transition: 0.2s;
+}
+
+.upload-area:hover {
+  border-color: #2563eb;
+  background: #f0f7ff;
+}
+
+.upload-icon {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.upload-area h3 {
+  margin: 5px 0;
+  color: #0f3d68;
+}
+
+.upload-area p {
+  margin: 4px 0 18px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.upload-area input[type="file"] {
+  max-width: 360px;
+  margin: auto;
+}
+
+.file-name {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   AI INFORMATION
+   ========================================= */
+
+.ai-information {
+  display: grid;
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.info-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.info-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #0f3d68;
+}
+
+.info-item span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+button {
+  font-family: inherit;
+}
+
+.primary-button,
+.secondary-button {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.primary-button {
+  background: #2563eb;
+  color: white;
+}
+
+.primary-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.secondary-button:hover {
+  background: #cbd5e1;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =========================================
+   ANALYSIS STATUS
+   ========================================= */
+
+.analysis-status {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 8px;
+  display: none;
+}
+
+.analysis-status.success {
+  display: block;
+  background: #ecfdf5;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.analysis-status.error {
+  display: block;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.analysis-status.loading {
+  display: block;
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+
+/* =========================================
+   GENERATED WORK AREAS
+   ========================================= */
+
+.generated-work-areas {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.work-area {
-  border: 1px solid #d5dbe5;
-  border-radius: 12px;
-
-  padding: 22px;
-
-  background: #ffffff;
-
-  position: relative;
+.generated-work-area {
+  border: 1px solid #dbe3ec;
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
 }
 
-.work-area:hover {
-  border-color: #b8c3d3;
-}
-
-
-/* WORK AREA HEADER */
-
-.work-area-header {
+.generated-work-area-header {
   display: flex;
   align-items: center;
-
   gap: 12px;
-
-  margin-bottom: 20px;
-
-  padding-bottom: 15px;
-
-  border-bottom: 1px solid var(--border);
+  background: #f1f5f9;
+  padding: 15px 18px;
+  border-bottom: 1px solid #dbe3ec;
 }
 
 .work-number {
   width: 34px;
   height: 34px;
-
   display: flex;
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
-
   border-radius: 50%;
-
-  background: #eaf1ff;
-  color: var(--primary);
-
+  background: #0f3d68;
+  color: white;
   font-weight: 700;
 }
 
-.work-title {
-  flex: 1;
+.generated-work-area-header h3 {
+  margin: 0;
+  color: #0f3d68;
+  font-size: 17px;
 }
 
-.work-title input {
-  font-size: 16px;
-  font-weight: 650;
-}
-
-
-/* =========================
-   THREE COLUMN AREA
-========================= */
-
-.three-column {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 15px;
-}
-
-.three-column textarea {
-  min-height: 130px;
+.generated-work-area-body {
+  padding: 20px;
 }
 
 
-/* =========================
-   RAW NOTES
-========================= */
+/* =========================================
+   AI GENERATED FIELD
+   ========================================= */
 
-.raw-notes {
-  min-height: 130px;
+.ai-generated-field {
+  margin-bottom: 18px;
+}
+
+.ai-generated-field label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 7px;
+  color: #334155;
+}
+
+.ai-generated-field textarea {
+  min-height: 100px;
 }
 
 
-/* =========================
-   REMOVE WORK AREA
-========================= */
+/* =========================================
+   STATUS BADGES
+   ========================================= */
 
-.remove-work-area {
-  border: none;
-
-  background: var(--danger-bg);
-  color: var(--red);
-
-  border-radius: 7px;
-
-  padding: 8px 12px;
-
-  font-size: 13px;
-  font-weight: 600;
-
-  cursor: pointer;
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.remove-work-area:hover {
-  background: #ffe4e6;
+.status-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-yellow {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.status-red {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 
-/* =========================
+/* =========================================
    REPORT PREVIEW
-========================= */
-
-.report-card {
-  min-height: 300px;
-}
+   ========================================= */
 
 .report-preview {
-  margin-top: 20px;
+  margin-top: 22px;
+  overflow-x: auto;
 }
-
-.empty-state {
-  border: 2px dashed var(--border);
-
-  border-radius: 12px;
-
-  padding: 60px 20px;
-
-  text-align: center;
-
-  color: var(--muted);
-}
-
-.empty-icon {
-  font-size: 42px;
-  margin-bottom: 10px;
-}
-
-.empty-state h3 {
-  color: var(--text);
-  margin: 5px 0 8px;
-}
-
-
-/* =========================
-   GENERATED REPORT
-========================= */
 
 .generated-report {
-  color: #172033;
+  background: white;
+  padding: 10px;
 }
 
 .generated-report h1 {
-  margin: 0 0 5px;
-  font-size: 27px;
+  text-align: center;
+  color: #0f3d68;
+  margin-bottom: 5px;
 }
 
 .report-date {
-  color: var(--muted);
-  margin-bottom: 25px;
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 22px;
 }
-
-
-/* REPORT SUMMARY */
 
 .report-summary {
-  background: #f0f6ff;
-
-  border-left: 4px solid var(--primary);
-
-  padding: 16px 18px;
-
-  border-radius: 7px;
-
-  margin-bottom: 24px;
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
-
-/* =========================
-   REPORT TABLE
-========================= */
-
 .report-table-wrapper {
-  width: 100%;
   overflow-x: auto;
 }
 
 .report-table {
   width: 100%;
-
   border-collapse: collapse;
-
   font-size: 13px;
 }
 
-.report-table th,
-.report-table td {
-  border: 1px solid #d5dbe5;
-
-  padding: 11px;
-
+.report-table th {
+  background: #0f3d68;
+  color: white;
+  padding: 10px;
   text-align: left;
-
   vertical-align: top;
 }
 
-.report-table th {
-  background: #eef2f7;
+.report-table td {
+  border: 1px solid #dbe3ec;
+  padding: 10px;
+  vertical-align: top;
+}
 
-  color: #344054;
+.report-table tr:nth-child(even) {
+  background: #f8fafc;
+}
 
+.report-number {
+  text-align: center;
   font-weight: 700;
 }
 
-.report-table tbody tr:nth-child(even) {
-  background: #fafbfc;
+.performance-block {
+  min-width: 250px;
 }
 
+.performance-item {
+  margin-bottom: 9px;
+}
 
-/* =========================
-   STATUS COLORS
-========================= */
-
-.status-green {
-  color: var(--green);
+.performance-label {
   font-weight: 700;
+  color: #0f3d68;
 }
-
-.status-yellow {
-  color: var(--yellow);
-  font-weight: 700;
-}
-
-.status-red {
-  color: var(--red);
-  font-weight: 700;
-}
-
-
-/* =========================
-   REPORT SECTIONS
-========================= */
 
 .report-section {
   margin-top: 28px;
 }
 
 .report-section h3 {
-  margin: 0 0 12px;
-
-  font-size: 17px;
-
-  color: #172033;
+  color: #0f3d68;
+  border-bottom: 2px solid #0f3d68;
+  padding-bottom: 7px;
 }
 
 
-/* =========================
-   WHAT / HOW / NEXT STEP
-========================= */
+/* =========================================
+   EMPTY STATE
+   ========================================= */
 
-.performance-block {
-  margin-top: 10px;
+.empty-state {
+  text-align: center;
+  padding: 45px 20px;
+  color: #64748b;
 }
 
-.performance-item {
+.empty-icon {
+  font-size: 40px;
   margin-bottom: 10px;
 }
 
-.performance-label {
-  font-weight: 700;
-  color: #344054;
+.empty-state h3 {
+  margin: 5px 0;
+  color: #334155;
+}
+
+.empty-state p {
+  margin: 5px 0;
 }
 
 
-/* =========================
+/* =========================================
    FOOTER
-========================= */
+   ========================================= */
 
 footer {
   text-align: center;
-
-  padding: 30px;
-
-  color: var(--muted);
-
+  padding: 25px;
+  color: #64748b;
   font-size: 13px;
 }
 
 
-/* =========================
-   MOBILE
-========================= */
+/* =========================================
+   RESPONSIVE
+   ========================================= */
 
 @media (max-width: 800px) {
 
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .header-actions .btn {
-    flex: 1;
-  }
-
-  .form-grid {
+  .three-column,
+  .ai-information {
     grid-template-columns: 1fr;
   }
 
-  .full-width {
-    grid-column: auto;
+  .app-header h1 {
+    font-size: 24px;
   }
 
-  .three-column {
-    grid-template-columns: 1fr;
-  }
-
-  .section-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .section-header .btn {
-    width: 100%;
-  }
-
-  .work-area {
-    padding: 16px;
-  }
-
-  .work-area-header {
-    align-items: flex-start;
+  .card {
+    padding: 18px;
   }
 
 }
 
 
-/* =========================
-   PRINT / PDF
-========================= */
+/* =========================================
+   PRINT
+   ========================================= */
 
 @media print {
 
@@ -606,10 +565,9 @@ footer {
     background: white;
   }
 
-  .topbar,
-  .card:not(.report-card),
-  footer,
-  .report-actions {
+  .app-header,
+  .card:not(:has(#reportPreview)),
+  footer {
     display: none !important;
   }
 
@@ -618,14 +576,12 @@ footer {
     margin: 0;
   }
 
-  .report-card {
-    border: none;
-    box-shadow: none;
-    padding: 0;
+  .report-preview {
+    display: block;
   }
 
-  .report-preview {
-    margin: 0;
+  .generated-report {
+    padding: 0;
   }
 
   .report-table {
