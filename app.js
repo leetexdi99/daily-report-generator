@@ -1,857 +1,739 @@
-// ============================================
-// REL-FA WEEKLY REPORT GENERATOR
-// EXCEL TRACKER VERSION
-// ============================================
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzufXJ-8su8T2FJhDJZNPp4_lgzwzJccr7GMEJo8PY38Lg3oTDd7KDbtlVt-a6S80BWsw/exec";
 
 let trackerData = [];
-
-
-// ============================================
-// INITIALIZE
-// ============================================
+let generatedWorkAreas = [];
 
 document.addEventListener("DOMContentLoaded", () => {
+  setDefaultDate();
 
-  // Set today's date
-  const dateInput =
-    document.getElementById("reportDate");
-
-  if (dateInput) {
-
-    const today = new Date();
-
-    const formattedDate =
-      today.getFullYear() +
-      "-" +
-      String(today.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(today.getDate()).padStart(2, "0");
-
-    dateInput.value = formattedDate;
-  }
-
-
-  // Excel file selection
-  const excelFile =
-    document.getElementById("excelFile");
+  const excelFile = document.getElementById("excelFile");
+  const analyzeTrackerBtn = document.getElementById("analyzeTrackerBtn");
+  const generateReportBtn = document.getElementById("generateReportBtn");
+  const clearReportBtn = document.getElementById("clearReportBtn");
+  const copyReportBtn = document.getElementById("copyReportBtn");
+  const printReportBtn = document.getElementById("printReportBtn");
 
   if (excelFile) {
-
-    excelFile.addEventListener(
-      "change",
-      handleExcelFile
-    );
+    excelFile.addEventListener("change", handleExcelUpload);
   }
 
-
-  // Buttons
-  const analyzeButton =
-    document.getElementById(
-      "analyzeTrackerBtn"
-    );
-
-  if (analyzeButton) {
-
-    analyzeButton.addEventListener(
-      "click",
-      analyzeTracker
-    );
+  if (analyzeTrackerBtn) {
+    analyzeTrackerBtn.addEventListener("click", analyzeTracker);
   }
 
-
-  const generateButton =
-    document.getElementById(
-      "generateReportBtn"
-    );
-
-  if (generateButton) {
-
-    generateButton.addEventListener(
-      "click",
-      generateReport
-    );
+  if (generateReportBtn) {
+    generateReportBtn.addEventListener("click", generateReport);
   }
 
-
-  const clearButton =
-    document.getElementById(
-      "clearReportBtn"
-    );
-
-  if (clearButton) {
-
-    clearButton.addEventListener(
-      "click",
-      clearReport
-    );
+  if (clearReportBtn) {
+    clearReportBtn.addEventListener("click", clearReport);
   }
 
-
-  const copyButton =
-    document.getElementById(
-      "copyReportBtn"
-    );
-
-  if (copyButton) {
-
-    copyButton.addEventListener(
-      "click",
-      copyReport
-    );
+  if (copyReportBtn) {
+    copyReportBtn.addEventListener("click", copyReport);
   }
 
-
-  const printButton =
-    document.getElementById(
-      "printReportBtn"
-    );
-
-  if (printButton) {
-
-    printButton.addEventListener(
-      "click",
-      printReport
-    );
+  if (printReportBtn) {
+    printReportBtn.addEventListener("click", printReport);
   }
-
 });
 
 
-// ============================================
-// LOAD SHEETJS
-// ============================================
+function setDefaultDate() {
+  const dateInput = document.getElementById("reportDate");
+
+  if (dateInput && !dateInput.value) {
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    dateInput.value = `${year}-${month}-${day}`;
+  }
+}
+
+
+/* =========================
+   EXCEL UPLOAD
+========================= */
+
+async function handleExcelUpload(event) {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  const fileName = document.getElementById("fileName");
+  const analysisStatus = document.getElementById("analysisStatus");
+
+  if (fileName) {
+    fileName.textContent = file.name;
+  }
+
+  if (analysisStatus) {
+    analysisStatus.textContent = "Reading Excel tracker...";
+    analysisStatus.className = "status-message";
+  }
+
+  try {
+    await loadSheetJS();
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    const workbook = XLSX.read(arrayBuffer, {
+      type: "array"
+    });
+
+    const firstSheetName = workbook.SheetNames[0];
+
+    const worksheet = workbook.Sheets[firstSheetName];
+
+    trackerData = XLSX.utils.sheet_to_json(worksheet, {
+      defval: ""
+    });
+
+    if (!trackerData.length) {
+      throw new Error("The Excel file does not contain any data.");
+    }
+
+    if (analysisStatus) {
+      analysisStatus.textContent =
+        `Excel loaded successfully — ${trackerData.length} tracker row(s) found.`;
+
+      analysisStatus.className = "status-message success";
+    }
+
+    showTrackerPreview();
+
+  } catch (error) {
+
+    console.error(error);
+
+    trackerData = [];
+
+    if (analysisStatus) {
+      analysisStatus.textContent =
+        "Error reading Excel: " + error.message;
+
+      analysisStatus.className = "status-message error";
+    }
+  }
+}
+
+
+/* =========================
+   LOAD SHEETJS
+========================= */
 
 function loadSheetJS() {
-
   return new Promise((resolve, reject) => {
 
-    // Already loaded
     if (window.XLSX) {
       resolve();
       return;
     }
 
-
-    const script =
-      document.createElement("script");
+    const script = document.createElement("script");
 
     script.src =
       "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
 
     script.onload = () => resolve();
 
-    script.onerror = () => {
-      reject(
-        new Error(
-          "Unable to load the Excel reader."
-        )
-      );
-    };
+    script.onerror = () =>
+      reject(new Error("Unable to load Excel reader."));
 
     document.head.appendChild(script);
-
   });
-
 }
 
 
-// ============================================
-// HANDLE EXCEL FILE
-// ============================================
+/* =========================
+   TRACKER PREVIEW
+========================= */
 
-async function handleExcelFile(event) {
+function showTrackerPreview() {
 
-  const file =
-    event.target.files[0];
+  const analysisStatus = document.getElementById("analysisStatus");
 
-  if (!file) {
+  if (!analysisStatus || !trackerData.length) {
+    return;
+  }
+
+  const previewRows = trackerData
+    .slice(0, 5)
+    .map(row => {
+
+      const values = Object.values(row);
+
+      return values
+        .slice(0, 5)
+        .join(" | ");
+
+    })
+    .join("\n");
+
+  console.log("Excel preview:");
+  console.log(previewRows);
+}
+
+
+/* =========================
+   AI ANALYSIS
+========================= */
+
+async function analyzeTracker() {
+
+  const analysisStatus =
+    document.getElementById("analysisStatus");
+
+  const analyzeButton =
+    document.getElementById("analyzeTrackerBtn");
+
+  if (!trackerData.length) {
+
+    if (analysisStatus) {
+      analysisStatus.textContent =
+        "Please upload an Excel tracker first.";
+
+      analysisStatus.className = "status-message error";
+    }
+
+    return;
+  }
+
+  const reportPeriod =
+    document.getElementById("reportPeriod")?.value || "";
+
+  const reportDate =
+    document.getElementById("reportDate")?.value || "";
+
+  const reportTitle =
+    document.getElementById("reportTitle")?.value ||
+    "Weekly Report (REL-FA)";
+
+
+  if (!APPS_SCRIPT_URL ||
+      APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
+
+    if (analysisStatus) {
+      analysisStatus.textContent =
+        "Apps Script URL has not been added to app.js.";
+
+      analysisStatus.className = "status-message error";
+    }
+
     return;
   }
 
 
-  const fileName =
-    document.getElementById("fileName");
-
-  if (fileName) {
-
-    fileName.textContent =
-      "📄 " + file.name;
+  if (analyzeButton) {
+    analyzeButton.disabled = true;
+    analyzeButton.textContent = "AI Analyzing...";
   }
 
 
-  setAnalysisStatus(
-    "Loading Excel file...",
-    "loading"
-  );
+  if (analysisStatus) {
+    analysisStatus.textContent =
+      "Sending Excel tracker to Gemini for analysis...";
+
+    analysisStatus.className = "status-message";
+  }
 
 
   try {
 
-    await loadSheetJS();
+    const response = await fetch(APPS_SCRIPT_URL, {
 
-    const buffer =
-      await file.arrayBuffer();
+      method: "POST",
 
-    const workbook =
-      XLSX.read(
-        buffer,
-        {
-          type: "array"
-        }
-      );
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+
+      body: JSON.stringify({
+
+        reportPeriod: reportPeriod,
+
+        reportDate: reportDate,
+
+        reportTitle: reportTitle,
+
+        trackerData: trackerData
+
+      })
+
+    });
 
 
-    if (
-      !workbook.SheetNames ||
-      workbook.SheetNames.length === 0
-    ) {
+    const data = await response.json();
+
+
+    if (!data.success) {
 
       throw new Error(
-        "The Excel file does not contain a worksheet."
+        data.error || "AI analysis failed."
       );
+
     }
 
 
-    // Use the first worksheet
-    const sheetName =
-      workbook.SheetNames[0];
-
-    const worksheet =
-      workbook.Sheets[sheetName];
+    generatedWorkAreas =
+      data.result?.workAreas || [];
 
 
-    trackerData =
-      XLSX.utils.sheet_to_json(
-        worksheet,
-        {
-          defval: ""
-        }
-      );
-
-
-    if (trackerData.length === 0) {
+    if (!generatedWorkAreas.length) {
 
       throw new Error(
-        "The selected worksheet is empty."
+        "Gemini did not generate any work areas."
       );
+
     }
 
 
-    console.log(
-      "Excel tracker loaded:",
-      trackerData
-    );
+    renderGeneratedWorkAreas();
 
 
-    setAnalysisStatus(
-      "Excel loaded successfully: " +
-      trackerData.length +
-      " tracker row(s) found.",
-      "success"
-    );
+    if (analysisStatus) {
 
+      analysisStatus.textContent =
+        `AI analysis completed — ${generatedWorkAreas.length} REL-FA work area(s) generated.`;
 
-    showTrackerPreview();
+      analysisStatus.className =
+        "status-message success";
+    }
+
 
   } catch (error) {
 
-    console.error(
-      "Excel loading error:",
-      error
-    );
+    console.error("AI analysis error:", error);
 
+    if (analysisStatus) {
 
-    trackerData = [];
+      analysisStatus.textContent =
+        "AI analysis failed: " + error.message;
 
+      analysisStatus.className =
+        "status-message error";
+    }
 
-    setAnalysisStatus(
-      "Excel loading failed: " +
-      error.message,
-      "error"
-    );
+  } finally {
+
+    if (analyzeButton) {
+
+      analyzeButton.disabled = false;
+
+      analyzeButton.textContent =
+        "Analyze Tracker with AI";
+
+    }
 
   }
-
 }
 
 
-// ============================================
-// SHOW TRACKER PREVIEW
-// ============================================
+/* =========================
+   RENDER AI WORK AREAS
+========================= */
 
-function showTrackerPreview() {
+function renderGeneratedWorkAreas() {
 
   const container =
-    document.getElementById(
-      "generatedWorkAreas"
+    document.getElementById("generatedWorkAreas");
+
+  if (!container) return;
+
+
+  container.innerHTML = "";
+
+
+  generatedWorkAreas.forEach((area, index) => {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "generated-work-area";
+
+
+    card.innerHTML = `
+
+      <div class="work-area-header">
+
+        <h3>
+          ${escapeHtml(area.name || "")}
+        </h3>
+
+        <span>
+          AI Generated
+        </span>
+
+      </div>
+
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label>Description</label>
+
+          <input
+            type="text"
+            class="generated-description"
+            value="${escapeAttribute(area.description || "")}"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Deadline</label>
+
+          <input
+            type="text"
+            class="generated-deadline"
+            value="${escapeAttribute(area.deadline || "")}"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Status</label>
+
+          <select class="generated-status">
+
+            ${statusOption("Green", area.status)}
+
+            ${statusOption("Yellow", area.status)}
+
+            ${statusOption("Red", area.status)}
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Priority</label>
+
+          <select class="generated-priority">
+
+            ${priorityOption("P1", area.priority)}
+
+            ${priorityOption("P2", area.priority)}
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>What</label>
+
+        <textarea
+          class="generated-what"
+          rows="3"
+        >${escapeHtml(area.what || "")}</textarea>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>How</label>
+
+        <textarea
+          class="generated-how"
+          rows="3"
+        >${escapeHtml(area.how || "")}</textarea>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Next Step</label>
+
+        <textarea
+          class="generated-next"
+          rows="3"
+        >${escapeHtml(area.nextStep || "")}</textarea>
+
+      </div>
+
+
+      <div class="source-cases">
+
+        <strong>Source Cases:</strong>
+
+        <span>
+          ${escapeHtml(
+            (area.sourceCases || []).join(", ")
+          )}
+        </span>
+
+      </div>
+
+    `;
+
+
+    container.appendChild(card);
+
+  });
+
+
+  const generateButton =
+    document.getElementById("generateReportBtn");
+
+  if (generateButton) {
+    generateButton.disabled = false;
+  }
+}
+
+
+/* =========================
+   REPORT GENERATION
+========================= */
+
+function generateReport() {
+
+  const cards =
+    document.querySelectorAll(".generated-work-area");
+
+  const reportPreview =
+    document.getElementById("reportPreview");
+
+  if (!cards.length) {
+
+    alert(
+      "Please analyze the Excel tracker with AI first."
     );
 
-  if (!container) {
     return;
   }
 
 
-  const previewRows =
-    trackerData.slice(0, 10);
+  let reportHtml = `
 
+    <div class="report-header">
 
-  let html = `
-
-    <div class="tracker-preview">
-
-      <h3>
-        📊 Excel Tracker Loaded
-      </h3>
+      <h1>
+        ${escapeHtml(
+          document.getElementById("reportTitle")?.value ||
+          "Weekly Report (REL-FA)"
+        )}
+      </h1>
 
       <p>
-        Showing the first
-        ${previewRows.length}
-        row(s) for verification.
+        ${escapeHtml(
+          document.getElementById("reportPeriod")?.value ||
+          ""
+        )}
       </p>
 
-      <div class="report-table-wrapper">
+      <p>
+        ${escapeHtml(
+          document.getElementById("reportDate")?.value ||
+          ""
+        )}
+      </p>
 
-        <table class="report-table">
+    </div>
 
-          <thead>
 
-            <tr>
+    <table class="report-table">
 
+      <thead>
+
+        <tr>
+          <th>No</th>
+          <th>KPI</th>
+          <th>KPI Description</th>
+          <th>Deadline</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Comment on Weekly Performance – What & How</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
   `;
 
 
-  // Get column names
-  const columns =
-    Object.keys(trackerData[0]);
+  cards.forEach((card, index) => {
+
+    const name =
+      card.querySelector(".work-area-header h3")
+        ?.textContent.trim() || "";
+
+    const description =
+      card.querySelector(".generated-description")
+        ?.value || "";
+
+    const deadline =
+      card.querySelector(".generated-deadline")
+        ?.value || "";
+
+    const status =
+      card.querySelector(".generated-status")
+        ?.value || "";
+
+    const priority =
+      card.querySelector(".generated-priority")
+        ?.value || "";
+
+    const what =
+      card.querySelector(".generated-what")
+        ?.value || "";
+
+    const how =
+      card.querySelector(".generated-how")
+        ?.value || "";
+
+    const nextStep =
+      card.querySelector(".generated-next")
+        ?.value || "";
 
 
-  columns.forEach(column => {
+    reportHtml += `
 
-    html += `
-      <th>
-        ${escapeHTML(column)}
-      </th>
+      <tr>
+
+        <td>${index + 1}</td>
+
+        <td>
+          ${escapeHtml(name)}
+        </td>
+
+        <td>
+          ${escapeHtml(description)}
+        </td>
+
+        <td>
+          ${escapeHtml(deadline)}
+        </td>
+
+        <td>
+          ${escapeHtml(status)}
+        </td>
+
+        <td>
+          ${escapeHtml(priority)}
+        </td>
+
+        <td>
+
+          <strong>What:</strong>
+          ${escapeHtml(what)}
+
+          <br><br>
+
+          <strong>How:</strong>
+          ${escapeHtml(how)}
+
+          <br><br>
+
+          <strong>Next Step:</strong>
+          ${escapeHtml(nextStep)}
+
+        </td>
+
+      </tr>
+
     `;
 
   });
 
 
-  html += `
+  reportHtml += `
 
-            </tr>
+      </tbody>
 
-          </thead>
-
-          <tbody>
+    </table>
 
   `;
 
 
-  previewRows.forEach(row => {
-
-    html += "<tr>";
-
-
-    columns.forEach(column => {
-
-      const value =
-        row[column] ?? "";
-
-
-      html += `
-        <td>
-          ${formatReportText(
-            String(value)
-          )}
-        </td>
-      `;
-
-    });
-
-
-    html += "</tr>";
-
-  });
-
-
-  html += `
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-      <p style="margin-top:15px;">
-        ✅ The tracker was read successfully.
-        The next step will send this data to Gemini
-        for REL-FA report generation.
-      </p>
-
-    </div>
-
-  `;
-
-
-  container.innerHTML = html;
-
+  if (reportPreview) {
+    reportPreview.innerHTML = reportHtml;
+  }
 }
 
 
-// ============================================
-// ANALYZE TRACKER
-// ============================================
-
-async function analyzeTracker() {
-
-  if (!trackerData.length) {
-
-    alert(
-      "Please upload your Excel tracker first."
-    );
-
-    return;
-  }
-
-
-  /*
-   * Gemini connection will be added in the
-   * next step.
-   *
-   * For now, this verifies that the Excel
-   * data is available to the application.
-   */
-
-  setAnalysisStatus(
-    "✅ Excel data is ready for AI analysis. " +
-    "The Gemini report-generation step will be connected next.",
-    "success"
-  );
-
-}
-
-
-// ============================================
-// GENERATE REPORT
-// ============================================
-
-function generateReport() {
-
-  const container =
-    document.getElementById(
-      "generatedWorkAreas"
-    );
-
-
-  if (!container) {
-    return;
-  }
-
-
-  const generatedAreas =
-    container.querySelectorAll(
-      ".generated-work-area"
-    );
-
-
-  if (generatedAreas.length === 0) {
-
-    alert(
-      "Please analyze the Excel tracker first."
-    );
-
-    return;
-  }
-
-
-  const period =
-    document.getElementById(
-      "reportPeriod"
-    )?.value || "";
-
-
-  const date =
-    document.getElementById(
-      "reportDate"
-    )?.value || "";
-
-
-  const title =
-    document.getElementById(
-      "reportTitle"
-    )?.value ||
-    "Weekly Report (REL-FA)";
-
-
-  let rows = "";
-
-
-  generatedAreas.forEach(
-    (area, index) => {
-
-      const name =
-        area.querySelector(
-          ".generated-name"
-        )?.value || "";
-
-
-      const description =
-        area.querySelector(
-          ".generated-description"
-        )?.value || "";
-
-
-      const deadline =
-        area.querySelector(
-          ".generated-deadline"
-        )?.value || "Weekly";
-
-
-      const status =
-        area.querySelector(
-          ".generated-status"
-        )?.value || "Green";
-
-
-      const priority =
-        area.querySelector(
-          ".generated-priority"
-        )?.value || "P1";
-
-
-      const what =
-        area.querySelector(
-          ".generated-what"
-        )?.value || "";
-
-
-      const how =
-        area.querySelector(
-          ".generated-how"
-        )?.value || "";
-
-
-      const nextStep =
-        area.querySelector(
-          ".generated-next"
-        )?.value || "";
-
-
-      rows += `
-
-        <tr>
-
-          <td>
-            ${index + 1}
-          </td>
-
-          <td>
-            <strong>
-              ${escapeHTML(name)}
-            </strong>
-          </td>
-
-          <td>
-            ${formatReportText(description)}
-          </td>
-
-          <td>
-            ${escapeHTML(deadline)}
-          </td>
-
-          <td>
-            ${escapeHTML(status)}
-          </td>
-
-          <td>
-            ${escapeHTML(priority)}
-          </td>
-
-          <td>
-
-            <strong>What:</strong>
-            ${formatReportText(what)}
-
-            <br><br>
-
-            <strong>How:</strong>
-            ${formatReportText(how)}
-
-          </td>
-
-        </tr>
-
-      `;
-
-    }
-  );
-
-
-  const nextSteps =
-    Array.from(
-      generatedAreas
-    )
-    .map(area => {
-
-      const name =
-        area.querySelector(
-          ".generated-name"
-        )?.value || "";
-
-      const next =
-        area.querySelector(
-          ".generated-next"
-        )?.value || "";
-
-      if (!next) {
-        return "";
-      }
-
-      return `
-        <div class="performance-item">
-
-          <strong>
-            ${escapeHTML(name)}
-          </strong>
-
-          <br>
-
-          ${formatReportText(next)}
-
-        </div>
-      `;
-
-    })
-    .join("");
-
-
-  const formattedDate =
-    date
-      ? new Date(
-          date + "T00:00:00"
-        ).toLocaleDateString(
-          undefined,
-          {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-          }
-        )
-      : "";
-
-
-  const reportHTML = `
-
-    <div class="generated-report">
-
-      <h1>
-        ${escapeHTML(title)}
-      </h1>
-
-      <div class="report-date">
-
-        ${escapeHTML(period)}
-
-        ${
-          period && formattedDate
-            ? " | "
-            : ""
-        }
-
-        ${escapeHTML(formattedDate)}
-
-      </div>
-
-
-      <div class="report-table-wrapper">
-
-        <table class="report-table">
-
-          <thead>
-
-            <tr>
-
-              <th>No.</th>
-
-              <th>KPI / Work Area</th>
-
-              <th>KPI Description</th>
-
-              <th>Deadline</th>
-
-              <th>Status</th>
-
-              <th>Priority</th>
-
-              <th>
-                Comment on Weekly Performance
-                – What & How
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            ${rows}
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-
-      <div class="report-section">
-
-        <h3>
-          Next Steps
-        </h3>
-
-        ${
-          nextSteps ||
-          "<p>No next steps entered.</p>"
-        }
-
-      </div>
-
-    </div>
-
-  `;
-
-
-  document.getElementById(
-    "reportPreview"
-  ).innerHTML = reportHTML;
-
-
-  document.getElementById(
-    "reportPreview"
-  ).scrollIntoView({
-    behavior: "smooth"
-  });
-
-}
-
-
-// ============================================
-// CLEAR
-// ============================================
+/* =========================
+   CLEAR
+========================= */
 
 function clearReport() {
 
-  const confirmed =
-    confirm(
-      "Clear the uploaded tracker and report?"
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
   trackerData = [];
+  generatedWorkAreas = [];
 
 
-  const fileInput =
-    document.getElementById(
-      "excelFile"
-    );
-
-  if (fileInput) {
-    fileInput.value = "";
-  }
-
+  const excelFile =
+    document.getElementById("excelFile");
 
   const fileName =
-    document.getElementById(
-      "fileName"
-    );
+    document.getElementById("fileName");
 
-  if (fileName) {
-    fileName.textContent =
-      "No file selected";
+  const generated =
+    document.getElementById("generatedWorkAreas");
+
+  const reportPreview =
+    document.getElementById("reportPreview");
+
+  const analysisStatus =
+    document.getElementById("analysisStatus");
+
+
+  if (excelFile) {
+    excelFile.value = "";
   }
 
+  if (fileName) {
+    fileName.textContent = "No file selected";
+  }
 
-  document.getElementById(
-    "generatedWorkAreas"
-  ).innerHTML = `
+  if (generated) {
+    generated.innerHTML = "";
+  }
 
-    <div class="empty-state">
+  if (reportPreview) {
+    reportPreview.innerHTML = "";
+  }
 
-      <div class="empty-icon">
-        🤖
-      </div>
+  if (analysisStatus) {
 
-      <h3>
-        No analysis yet
-      </h3>
+    analysisStatus.textContent =
+      "Upload an Excel tracker to begin.";
 
-      <p>
-        Upload your Excel tracker and click
-        <strong>Analyze Tracker</strong>.
-      </p>
+    analysisStatus.className =
+      "status-message";
 
-    </div>
-
-  `;
-
-
-  document.getElementById(
-    "reportPreview"
-  ).innerHTML = `
-
-    <div class="empty-state">
-
-      <div class="empty-icon">
-        📋
-      </div>
-
-      <h3>
-        No report generated yet
-      </h3>
-
-      <p>
-        Complete the AI analysis and generate
-        your weekly report.
-      </p>
-
-    </div>
-
-  `;
-
-
-  setAnalysisStatus(
-    "",
-    ""
-  );
-
+  }
 }
 
 
-// ============================================
-// COPY REPORT
-// ============================================
+/* =========================
+   COPY
+========================= */
 
 async function copyReport() {
 
-  const report =
-    document.getElementById(
-      "reportPreview"
-    );
+  const reportPreview =
+    document.getElementById("reportPreview");
 
+  if (!reportPreview || !reportPreview.innerText.trim()) {
 
-  if (
-    !report ||
-    !report.innerText.trim()
-  ) {
-
-    alert(
-      "There is no report to copy."
-    );
+    alert("Generate the report first.");
 
     return;
   }
@@ -860,128 +742,80 @@ async function copyReport() {
   try {
 
     await navigator.clipboard.writeText(
-      report.innerText
+      reportPreview.innerText
     );
 
-
-    alert(
-      "Report copied to clipboard."
-    );
+    alert("Report copied to clipboard.");
 
   } catch (error) {
 
-    alert(
-      "Unable to copy automatically."
-    );
+    alert("Unable to copy the report.");
 
   }
-
 }
 
 
-// ============================================
-// PRINT
-// ============================================
+/* =========================
+   PRINT
+========================= */
 
 function printReport() {
 
-  const report =
-    document.getElementById(
-      "reportPreview"
-    );
+  const reportPreview =
+    document.getElementById("reportPreview");
 
+  if (!reportPreview || !reportPreview.innerText.trim()) {
 
-  if (
-    !report ||
-    !report.innerText.trim()
-  ) {
-
-    alert(
-      "There is no report to print."
-    );
+    alert("Generate the report first.");
 
     return;
   }
-
 
   window.print();
-
 }
 
 
-// ============================================
-// STATUS MESSAGE
-// ============================================
+/* =========================
+   HELPERS
+========================= */
 
-function setAnalysisStatus(
-  message,
-  type
-) {
+function statusOption(value, selected) {
 
-  const status =
-    document.getElementById(
-      "analysisStatus"
-    );
-
-
-  if (!status) {
-    return;
-  }
-
-
-  status.className =
-    "analysis-status " +
-    (type || "");
-
-
-  status.textContent =
-    message || "";
-
+  return `
+    <option
+      value="${value}"
+      ${value === selected ? "selected" : ""}
+    >
+      ${value}
+    </option>
+  `;
 }
 
 
-// ============================================
-// FORMAT TEXT
-// ============================================
+function priorityOption(value, selected) {
 
-function formatReportText(text) {
-
-  return escapeHTML(
-    text
-  ).replace(
-    /\n/g,
-    "<br>"
-  );
-
+  return `
+    <option
+      value="${value}"
+      ${value === selected ? "selected" : ""}
+    >
+      ${value}
+    </option>
+  `;
 }
 
 
-// ============================================
-// ESCAPE HTML
-// ============================================
-
-function escapeHTML(value) {
+function escapeHtml(value) {
 
   return String(value)
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
 }
