@@ -1,3 +1,9 @@
+// ============================================
+// AI BACKEND
+// ============================================
+
+const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbzufXJ-8su8T2FJhDJZNPp4_lgzwzJccr7GMEJo8PY38Lg3oTDd7KDbtlVt-a6S80BWsw/exec";
+
 // ========================================
 // REL-FA WEEKLY REPORT GENERATOR
 // ========================================
