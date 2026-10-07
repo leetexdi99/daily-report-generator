@@ -926,3 +926,174 @@ function clearReport() {
   `;
 
 }
+// ============================================
+// AI GENERATE - REL-FA
+// ============================================
+
+function addAIButtons() {
+  const workAreas = document.querySelectorAll(".work-area");
+
+  workAreas.forEach((area, index) => {
+
+    // Don't add the button twice
+    if (area.querySelector(".ai-generate-btn")) {
+      return;
+    }
+
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "ai-generate-btn";
+    button.textContent = "🤖 Generate with AI";
+
+    button.style.marginTop = "10px";
+    button.style.padding = "10px 16px";
+    button.style.border = "none";
+    button.style.borderRadius = "8px";
+    button.style.background = "#2563eb";
+    button.style.color = "white";
+    button.style.cursor = "pointer";
+    button.style.fontWeight = "600";
+
+    button.addEventListener("click", function () {
+      generateAIForWorkArea(area, button);
+    });
+
+    // Put button after the raw notes section
+    const rawNotesField =
+      area.querySelector('[id*="activity"]') ||
+      area.querySelector('[id*="raw"]');
+
+    if (rawNotesField) {
+      rawNotesField.parentElement.appendChild(button);
+    } else {
+      area.appendChild(button);
+    }
+  });
+}
+
+
+// ============================================
+// SEND WORK AREA TO GEMINI
+// ============================================
+
+async function generateAIForWorkArea(area, button) {
+
+  const originalText = button.textContent;
+
+  try {
+
+    button.disabled = true;
+    button.textContent = "🤖 AI is working...";
+
+    // Find fields inside this work area
+    const rawNotes =
+      area.querySelector('[id*="activity"]') ||
+      area.querySelector('[id*="raw"]');
+
+    const whatField =
+      area.querySelector('[id*="what"]');
+
+    const howField =
+      area.querySelector('[id*="how"]');
+
+    const nextStepField =
+      area.querySelector('[id*="next"]');
+
+    // Get KPI / Work Area name
+    const kpiField =
+      area.querySelector('[id*="kpi"]') ||
+      area.querySelector('input[type="text"]');
+
+    // Get description
+    const descriptionField =
+      area.querySelector('textarea');
+
+    if (!rawNotes || !rawNotes.value.trim()) {
+      alert("Please enter your Weekly Activity / Raw Notes first.");
+      return;
+    }
+
+    // Find status and priority
+    const selects = area.querySelectorAll("select");
+
+    let status = "";
+    let priority = "";
+
+    selects.forEach(select => {
+
+      const id = (select.id || "").toLowerCase();
+
+      if (id.includes("status")) {
+        status = select.value;
+      }
+
+      if (id.includes("priority")) {
+        priority = select.value;
+      }
+    });
+
+    const payload = {
+      kpi: kpiField ? kpiField.value : "",
+      description: descriptionField ? descriptionField.value : "",
+      status: status,
+      priority: priority,
+      rawNotes: rawNotes.value
+    };
+
+    // Call Google Apps Script
+    const response = await fetch(AI_BACKEND_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || "AI request failed.");
+    }
+
+    // Put AI result into the form
+    if (whatField) {
+      whatField.value = data.result.what || "";
+    }
+
+    if (howField) {
+      howField.value = data.result.how || "";
+    }
+
+    if (nextStepField) {
+      nextStepField.value = data.result.nextStep || "";
+    }
+
+    button.textContent = "✅ AI Generated";
+
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2500);
+
+  } catch (error) {
+
+    console.error("AI Error:", error);
+
+    alert(
+      "AI generation failed.\n\n" +
+      error.message
+    );
+
+    button.textContent = originalText;
+
+  } finally {
+
+    button.disabled = false;
+  }
+}
+
+
+// Add AI buttons when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+  addAIButtons();
+});
