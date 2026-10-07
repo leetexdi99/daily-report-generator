@@ -1,482 +1,664 @@
-// ========================================
+// ============================================
 // REL-FA WEEKLY REPORT GENERATOR
-// ========================================
+// EXCEL TRACKER VERSION
+// ============================================
+
+let trackerData = [];
 
 
-// ----------------------------------------
+// ============================================
 // INITIALIZE
-// ----------------------------------------
+// ============================================
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const dateInput = document.getElementById("reportDate");
-
-  const today = new Date();
-
-  const formattedDate =
-    today.getFullYear() +
-    "-" +
-    String(today.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(today.getDate()).padStart(2, "0");
+  // Set today's date
+  const dateInput =
+    document.getElementById("reportDate");
 
   if (dateInput) {
+
+    const today = new Date();
+
+    const formattedDate =
+      today.getFullYear() +
+      "-" +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(today.getDate()).padStart(2, "0");
+
     dateInput.value = formattedDate;
+  }
+
+
+  // Excel file selection
+  const excelFile =
+    document.getElementById("excelFile");
+
+  if (excelFile) {
+
+    excelFile.addEventListener(
+      "change",
+      handleExcelFile
+    );
+  }
+
+
+  // Buttons
+  const analyzeButton =
+    document.getElementById(
+      "analyzeTrackerBtn"
+    );
+
+  if (analyzeButton) {
+
+    analyzeButton.addEventListener(
+      "click",
+      analyzeTracker
+    );
+  }
+
+
+  const generateButton =
+    document.getElementById(
+      "generateReportBtn"
+    );
+
+  if (generateButton) {
+
+    generateButton.addEventListener(
+      "click",
+      generateReport
+    );
+  }
+
+
+  const clearButton =
+    document.getElementById(
+      "clearReportBtn"
+    );
+
+  if (clearButton) {
+
+    clearButton.addEventListener(
+      "click",
+      clearReport
+    );
+  }
+
+
+  const copyButton =
+    document.getElementById(
+      "copyReportBtn"
+    );
+
+  if (copyButton) {
+
+    copyButton.addEventListener(
+      "click",
+      copyReport
+    );
+  }
+
+
+  const printButton =
+    document.getElementById(
+      "printReportBtn"
+    );
+
+  if (printButton) {
+
+    printButton.addEventListener(
+      "click",
+      printReport
+    );
   }
 
 });
 
 
-// ----------------------------------------
-// ADD WORK AREA
-// ----------------------------------------
+// ============================================
+// LOAD SHEETJS
+// ============================================
 
-function addWorkArea() {
+function loadSheetJS() {
+
+  return new Promise((resolve, reject) => {
+
+    // Already loaded
+    if (window.XLSX) {
+      resolve();
+      return;
+    }
+
+
+    const script =
+      document.createElement("script");
+
+    script.src =
+      "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+
+    script.onload = () => resolve();
+
+    script.onerror = () => {
+      reject(
+        new Error(
+          "Unable to load the Excel reader."
+        )
+      );
+    };
+
+    document.head.appendChild(script);
+
+  });
+
+}
+
+
+// ============================================
+// HANDLE EXCEL FILE
+// ============================================
+
+async function handleExcelFile(event) {
+
+  const file =
+    event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+
+  const fileName =
+    document.getElementById("fileName");
+
+  if (fileName) {
+
+    fileName.textContent =
+      "📄 " + file.name;
+  }
+
+
+  setAnalysisStatus(
+    "Loading Excel file...",
+    "loading"
+  );
+
+
+  try {
+
+    await loadSheetJS();
+
+    const buffer =
+      await file.arrayBuffer();
+
+    const workbook =
+      XLSX.read(
+        buffer,
+        {
+          type: "array"
+        }
+      );
+
+
+    if (
+      !workbook.SheetNames ||
+      workbook.SheetNames.length === 0
+    ) {
+
+      throw new Error(
+        "The Excel file does not contain a worksheet."
+      );
+    }
+
+
+    // Use the first worksheet
+    const sheetName =
+      workbook.SheetNames[0];
+
+    const worksheet =
+      workbook.Sheets[sheetName];
+
+
+    trackerData =
+      XLSX.utils.sheet_to_json(
+        worksheet,
+        {
+          defval: ""
+        }
+      );
+
+
+    if (trackerData.length === 0) {
+
+      throw new Error(
+        "The selected worksheet is empty."
+      );
+    }
+
+
+    console.log(
+      "Excel tracker loaded:",
+      trackerData
+    );
+
+
+    setAnalysisStatus(
+      "Excel loaded successfully: " +
+      trackerData.length +
+      " tracker row(s) found.",
+      "success"
+    );
+
+
+    showTrackerPreview();
+
+  } catch (error) {
+
+    console.error(
+      "Excel loading error:",
+      error
+    );
+
+
+    trackerData = [];
+
+
+    setAnalysisStatus(
+      "Excel loading failed: " +
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+// ============================================
+// SHOW TRACKER PREVIEW
+// ============================================
+
+function showTrackerPreview() {
 
   const container =
-    document.getElementById("workAreaContainer");
+    document.getElementById(
+      "generatedWorkAreas"
+    );
 
-  const number =
-    container.querySelectorAll(".work-area").length + 1;
+  if (!container) {
+    return;
+  }
 
-  const article =
-    document.createElement("article");
 
-  article.className = "work-area";
+  const previewRows =
+    trackerData.slice(0, 10);
 
-  article.innerHTML = `
 
-    <div class="work-area-header">
+  let html = `
 
-      <div class="work-number">
-        ${number}
-      </div>
+    <div class="tracker-preview">
 
-      <div class="work-title">
+      <h3>
+        📊 Excel Tracker Loaded
+      </h3>
 
-        <input
-          class="work-name"
-          value="New REL-FA Work Area"
-        >
+      <p>
+        Showing the first
+        ${previewRows.length}
+        row(s) for verification.
+      </p>
 
-      </div>
+      <div class="report-table-wrapper">
 
-    </div>
+        <table class="report-table">
 
+          <thead>
 
-    <div class="form-group">
-
-      <label>KPI Description</label>
-
-      <textarea
-        class="description"
-        placeholder="Enter the KPI / work area description..."
-      ></textarea>
-
-    </div>
-
-
-    <div class="three-column">
-
-      <div class="form-group">
-
-        <label>Deadline</label>
-
-        <select class="deadline">
-
-          <option selected>Weekly</option>
-          <option>Ongoing</option>
-          <option>Custom</option>
-
-        </select>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>Status</label>
-
-        <select class="status">
-
-          <option value="Green" selected>
-            🟢 Green
-          </option>
-
-          <option value="Yellow">
-            🟡 Yellow
-          </option>
-
-          <option value="Red">
-            🔴 Red
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>Priority</label>
-
-        <select class="priority">
-
-          <option selected>P1</option>
-          <option>P2</option>
-
-        </select>
-
-      </div>
-
-    </div>
-
-
-    <div class="form-group">
-
-      <label>Weekly Activity / Raw Notes</label>
-
-      <textarea
-        class="raw-notes"
-        placeholder="Enter what happened this week..."
-      ></textarea>
-
-    </div>
-
-
-    <div class="three-column">
-
-      <div class="form-group">
-
-        <label>What</label>
-
-        <textarea
-          class="what"
-          placeholder="What was accomplished?"
-        ></textarea>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>How</label>
-
-        <textarea
-          class="how"
-          placeholder="How was it accomplished?"
-        ></textarea>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>Next Step</label>
-
-        <textarea
-          class="next-step"
-          placeholder="What happens next?"
-        ></textarea>
-
-      </div>
-
-    </div>
-
-
-    <button
-      class="remove-work-area"
-      onclick="removeWorkArea(this)"
-    >
-      Remove Work Area
-    </button>
+            <tr>
 
   `;
 
-  container.appendChild(article);
 
-  renumberWorkAreas();
-}
-
-
-// ----------------------------------------
-// REMOVE WORK AREA
-// ----------------------------------------
-
-function removeWorkArea(button) {
-
-  const area =
-    button.closest(".work-area");
-
-  if (!area) {
-    return;
-  }
-
-  const confirmed =
-    confirm(
-      "Remove this work area from the report?"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  area.remove();
-
-  renumberWorkAreas();
-}
+  // Get column names
+  const columns =
+    Object.keys(trackerData[0]);
 
 
-// ----------------------------------------
-// RENUMBER WORK AREAS
-// ----------------------------------------
+  columns.forEach(column => {
 
-function renumberWorkAreas() {
-
-  const areas =
-    document.querySelectorAll(".work-area");
-
-  areas.forEach((area, index) => {
-
-    const number =
-      area.querySelector(".work-number");
-
-    if (number) {
-      number.textContent = index + 1;
-    }
+    html += `
+      <th>
+        ${escapeHTML(column)}
+      </th>
+    `;
 
   });
 
-}
+
+  html += `
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+  `;
 
 
-// ----------------------------------------
-// GET WORK AREA DATA
-// ----------------------------------------
+  previewRows.forEach(row => {
 
-function getWorkAreaData() {
-
-  const areas =
-    document.querySelectorAll(".work-area");
-
-  const data = [];
-
-  areas.forEach(area => {
-
-    const name =
-      area.querySelector(".work-name")?.value.trim() || "";
-
-    const description =
-      area.querySelector(".description")?.value.trim() || "";
-
-    const deadline =
-      area.querySelector(".deadline")?.value || "";
-
-    const status =
-      area.querySelector(".status")?.value || "";
-
-    const priority =
-      area.querySelector(".priority")?.value || "";
-
-    const rawNotes =
-      area.querySelector(".raw-notes")?.value.trim() || "";
-
-    const what =
-      area.querySelector(".what")?.value.trim() || "";
-
-    const how =
-      area.querySelector(".how")?.value.trim() || "";
-
-    const nextStep =
-      area.querySelector(".next-step")?.value.trim() || "";
+    html += "<tr>";
 
 
-    data.push({
-      name,
-      description,
-      deadline,
-      status,
-      priority,
-      rawNotes,
-      what,
-      how,
-      nextStep
+    columns.forEach(column => {
+
+      const value =
+        row[column] ?? "";
+
+
+      html += `
+        <td>
+          ${formatReportText(
+            String(value)
+          )}
+        </td>
+      `;
+
     });
 
+
+    html += "</tr>";
+
   });
 
-  return data;
+
+  html += `
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <p style="margin-top:15px;">
+        ✅ The tracker was read successfully.
+        The next step will send this data to Gemini
+        for REL-FA report generation.
+      </p>
+
+    </div>
+
+  `;
+
+
+  container.innerHTML = html;
+
 }
 
 
-// ----------------------------------------
+// ============================================
+// ANALYZE TRACKER
+// ============================================
+
+async function analyzeTracker() {
+
+  if (!trackerData.length) {
+
+    alert(
+      "Please upload your Excel tracker first."
+    );
+
+    return;
+  }
+
+
+  /*
+   * Gemini connection will be added in the
+   * next step.
+   *
+   * For now, this verifies that the Excel
+   * data is available to the application.
+   */
+
+  setAnalysisStatus(
+    "✅ Excel data is ready for AI analysis. " +
+    "The Gemini report-generation step will be connected next.",
+    "success"
+  );
+
+}
+
+
+// ============================================
 // GENERATE REPORT
-// ----------------------------------------
+// ============================================
 
 function generateReport() {
 
+  const container =
+    document.getElementById(
+      "generatedWorkAreas"
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  const generatedAreas =
+    container.querySelectorAll(
+      ".generated-work-area"
+    );
+
+
+  if (generatedAreas.length === 0) {
+
+    alert(
+      "Please analyze the Excel tracker first."
+    );
+
+    return;
+  }
+
+
   const period =
-    document.getElementById("reportPeriod")
-      ?.value.trim() || "";
+    document.getElementById(
+      "reportPeriod"
+    )?.value || "";
+
 
   const date =
-    document.getElementById("reportDate")
-      ?.value || "";
+    document.getElementById(
+      "reportDate"
+    )?.value || "";
+
 
   const title =
-    document.getElementById("reportTitle")
-      ?.value.trim() || "Weekly Report (REL-FA)";
+    document.getElementById(
+      "reportTitle"
+    )?.value ||
+    "Weekly Report (REL-FA)";
 
 
-  const workAreas =
-    getWorkAreaData();
+  let rows = "";
 
 
-  if (workAreas.length === 0) {
+  generatedAreas.forEach(
+    (area, index) => {
 
-    alert(
-      "Please add at least one REL-FA work area."
-    );
-
-    return;
-  }
-
-
-  const hasContent =
-    workAreas.some(area =>
-      area.rawNotes ||
-      area.what ||
-      area.how ||
-      area.nextStep
-    );
+      const name =
+        area.querySelector(
+          ".generated-name"
+        )?.value || "";
 
 
-  if (!hasContent) {
+      const description =
+        area.querySelector(
+          ".generated-description"
+        )?.value || "";
 
-    alert(
-      "Please enter some weekly activity information before generating the report."
-    );
 
-    return;
-  }
+      const deadline =
+        area.querySelector(
+          ".generated-deadline"
+        )?.value || "Weekly";
+
+
+      const status =
+        area.querySelector(
+          ".generated-status"
+        )?.value || "Green";
+
+
+      const priority =
+        area.querySelector(
+          ".generated-priority"
+        )?.value || "P1";
+
+
+      const what =
+        area.querySelector(
+          ".generated-what"
+        )?.value || "";
+
+
+      const how =
+        area.querySelector(
+          ".generated-how"
+        )?.value || "";
+
+
+      const nextStep =
+        area.querySelector(
+          ".generated-next"
+        )?.value || "";
+
+
+      rows += `
+
+        <tr>
+
+          <td>
+            ${index + 1}
+          </td>
+
+          <td>
+            <strong>
+              ${escapeHTML(name)}
+            </strong>
+          </td>
+
+          <td>
+            ${formatReportText(description)}
+          </td>
+
+          <td>
+            ${escapeHTML(deadline)}
+          </td>
+
+          <td>
+            ${escapeHTML(status)}
+          </td>
+
+          <td>
+            ${escapeHTML(priority)}
+          </td>
+
+          <td>
+
+            <strong>What:</strong>
+            ${formatReportText(what)}
+
+            <br><br>
+
+            <strong>How:</strong>
+            ${formatReportText(how)}
+
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+  );
+
+
+  const nextSteps =
+    Array.from(
+      generatedAreas
+    )
+    .map(area => {
+
+      const name =
+        area.querySelector(
+          ".generated-name"
+        )?.value || "";
+
+      const next =
+        area.querySelector(
+          ".generated-next"
+        )?.value || "";
+
+      if (!next) {
+        return "";
+      }
+
+      return `
+        <div class="performance-item">
+
+          <strong>
+            ${escapeHTML(name)}
+          </strong>
+
+          <br>
+
+          ${formatReportText(next)}
+
+        </div>
+      `;
+
+    })
+    .join("");
 
 
   const formattedDate =
     date
-      ? new Date(date + "T00:00:00")
-          .toLocaleDateString(
-            undefined,
-            {
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            }
-          )
+      ? new Date(
+          date + "T00:00:00"
+        ).toLocaleDateString(
+          undefined,
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          }
+        )
       : "";
-
-
-  let tableRows = "";
-
-
-  workAreas.forEach((area, index) => {
-
-    const statusClass =
-      getStatusClass(area.status);
-
-
-    const statusText =
-      getStatusText(area.status);
-
-
-    const performance =
-      buildPerformanceHTML(area);
-
-
-    tableRows += `
-
-      <tr>
-
-        <td class="report-number">
-          ${index + 1}
-        </td>
-
-
-        <td>
-
-          <strong>
-            ${escapeHTML(area.name)}
-          </strong>
-
-        </td>
-
-
-        <td>
-          ${formatReportText(area.description)}
-        </td>
-
-
-        <td>
-          ${escapeHTML(area.deadline)}
-        </td>
-
-
-        <td class="${statusClass}">
-          ${statusText}
-        </td>
-
-
-        <td>
-          ${escapeHTML(area.priority)}
-        </td>
-
-
-        <td>
-
-          ${performance}
-
-        </td>
-
-      </tr>
-
-    `;
-
-  });
 
 
   const reportHTML = `
 
     <div class="generated-report">
 
-
       <h1>
         ${escapeHTML(title)}
       </h1>
-
 
       <div class="report-date">
 
         ${escapeHTML(period)}
 
-        ${period && formattedDate ? " | " : ""}
+        ${
+          period && formattedDate
+            ? " | "
+            : ""
+        }
 
         ${escapeHTML(formattedDate)}
-
-      </div>
-
-
-      <div class="report-summary">
-
-        <strong>
-          Weekly Performance Summary
-        </strong>
-
-        <p style="margin-top:8px;">
-
-          REL-FA activities, investigation progress,
-          analytical support, coordination activities
-          and follow-up actions for the reporting period.
-
-        </p>
 
       </div>
 
@@ -491,39 +673,28 @@ function generateReport() {
 
               <th>No.</th>
 
-              <th>
-                KPI / Work Area
-              </th>
+              <th>KPI / Work Area</th>
 
-              <th>
-                KPI Description
-              </th>
+              <th>KPI Description</th>
 
-              <th>
-                Deadline
-              </th>
+              <th>Deadline</th>
 
-              <th>
-                Status
-              </th>
+              <th>Status</th>
 
-              <th>
-                Priority
-              </th>
+              <th>Priority</th>
 
               <th>
                 Comment on Weekly Performance
-                – What &amp; How
+                – What & How
               </th>
 
             </tr>
 
           </thead>
 
-
           <tbody>
 
-            ${tableRows}
+            ${rows}
 
           </tbody>
 
@@ -538,11 +709,12 @@ function generateReport() {
           Next Steps
         </h3>
 
-
-        ${buildNextStepsHTML(workAreas)}
+        ${
+          nextSteps ||
+          "<p>No next steps entered.</p>"
+        }
 
       </div>
-
 
     </div>
 
@@ -563,291 +735,15 @@ function generateReport() {
 }
 
 
-// ----------------------------------------
-// BUILD PERFORMANCE HTML
-// ----------------------------------------
-
-function buildPerformanceHTML(area) {
-
-  let html = "";
-
-
-  if (area.what) {
-
-    html += `
-
-      <div class="performance-item">
-
-        <span class="performance-label">
-          What:
-        </span>
-
-        ${formatReportText(area.what)}
-
-      </div>
-
-    `;
-
-  }
-
-
-  if (area.how) {
-
-    html += `
-
-      <div class="performance-item">
-
-        <span class="performance-label">
-          How:
-        </span>
-
-        ${formatReportText(area.how)}
-
-      </div>
-
-    `;
-
-  }
-
-
-  if (area.nextStep) {
-
-    html += `
-
-      <div class="performance-item">
-
-        <span class="performance-label">
-          Next Step:
-        </span>
-
-        ${formatReportText(area.nextStep)}
-
-      </div>
-
-    `;
-
-  }
-
-
-  if (!html && area.rawNotes) {
-
-    html = formatReportText(area.rawNotes);
-
-  }
-
-
-  if (!html) {
-
-    html =
-      "<em>No weekly performance information entered.</em>";
-
-  }
-
-
-  return `<div class="performance-block">${html}</div>`;
-}
-
-
-// ----------------------------------------
-// BUILD NEXT STEPS
-// ----------------------------------------
-
-function buildNextStepsHTML(workAreas) {
-
-  let html = "";
-
-
-  workAreas.forEach((area, index) => {
-
-    if (!area.nextStep) {
-      return;
-    }
-
-
-    html += `
-
-      <div class="performance-item">
-
-        <strong>
-          ${index + 1}. ${escapeHTML(area.name)}
-        </strong>
-
-        <br>
-
-        ${formatReportText(area.nextStep)}
-
-      </div>
-
-    `;
-
-  });
-
-
-  if (!html) {
-
-    html =
-      "<p>No next steps entered.</p>";
-
-  }
-
-
-  return html;
-}
-
-
-// ----------------------------------------
-// STATUS CLASS
-// ----------------------------------------
-
-function getStatusClass(status) {
-
-  switch (status) {
-
-    case "Green":
-      return "status-green";
-
-    case "Yellow":
-      return "status-yellow";
-
-    case "Red":
-      return "status-red";
-
-    default:
-      return "";
-
-  }
-
-}
-
-
-// ----------------------------------------
-// STATUS TEXT
-// ----------------------------------------
-
-function getStatusText(status) {
-
-  switch (status) {
-
-    case "Green":
-      return "🟢 Green";
-
-    case "Yellow":
-      return "🟡 Yellow";
-
-    case "Red":
-      return "🔴 Red";
-
-    default:
-      return escapeHTML(status);
-
-  }
-
-}
-
-
-// ----------------------------------------
-// FORMAT REPORT TEXT
-// ----------------------------------------
-
-function formatReportText(text) {
-
-  return escapeHTML(text)
-    .replace(/\n/g, "<br>");
-
-}
-
-
-// ----------------------------------------
-// ESCAPE HTML
-// ----------------------------------------
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-
-// ----------------------------------------
-// COPY REPORT
-// ----------------------------------------
-
-async function copyReport() {
-
-  const report =
-    document.getElementById("reportPreview");
-
-
-  if (!report || !report.innerText.trim()) {
-
-    alert(
-      "There is no report to copy."
-    );
-
-    return;
-  }
-
-
-  try {
-
-    await navigator.clipboard.writeText(
-      report.innerText
-    );
-
-    alert(
-      "Report copied to clipboard."
-    );
-
-  } catch (error) {
-
-    alert(
-      "Unable to copy automatically. Please copy the report manually."
-    );
-
-  }
-
-}
-
-
-// ----------------------------------------
-// PRINT / PDF
-// ----------------------------------------
-
-function printReport() {
-
-  const report =
-    document.getElementById("reportPreview");
-
-
-  if (!report || !report.innerText.trim()) {
-
-    alert(
-      "There is no report to print."
-    );
-
-    return;
-  }
-
-
-  window.print();
-
-}
-
-
-// ----------------------------------------
-// CLEAR REPORT
-// ----------------------------------------
+// ============================================
+// CLEAR
+// ============================================
 
 function clearReport() {
 
   const confirmed =
     confirm(
-      "Clear all entered weekly information?"
+      "Clear the uploaded tracker and report?"
     );
 
 
@@ -856,44 +752,52 @@ function clearReport() {
   }
 
 
-  document.getElementById(
-    "reportPeriod"
-  ).value = "WW40";
+  trackerData = [];
+
+
+  const fileInput =
+    document.getElementById(
+      "excelFile"
+    );
+
+  if (fileInput) {
+    fileInput.value = "";
+  }
+
+
+  const fileName =
+    document.getElementById(
+      "fileName"
+    );
+
+  if (fileName) {
+    fileName.textContent =
+      "No file selected";
+  }
 
 
   document.getElementById(
-    "reportTitle"
-  ).value = "Weekly Report (REL-FA)";
+    "generatedWorkAreas"
+  ).innerHTML = `
 
+    <div class="empty-state">
 
-  const areas =
-    document.querySelectorAll(".work-area");
+      <div class="empty-icon">
+        🤖
+      </div>
 
+      <h3>
+        No analysis yet
+      </h3>
 
-  areas.forEach(area => {
+      <p>
+        Upload your Excel tracker and click
+        <strong>Analyze Tracker</strong>.
+      </p>
 
-    const rawNotes =
-      area.querySelector(".raw-notes");
+    </div>
 
-    const what =
-      area.querySelector(".what");
-
-    const how =
-      area.querySelector(".how");
-
-    const nextStep =
-      area.querySelector(".next-step");
-
-
-    if (rawNotes) rawNotes.value = "";
-
-    if (what) what.value = "";
-
-    if (how) how.value = "";
-
-    if (nextStep) nextStep.value = "";
-
-  });
+  `;
 
 
   document.getElementById(
@@ -911,12 +815,173 @@ function clearReport() {
       </h3>
 
       <p>
-        Update your weekly activities and click
-        <strong>Generate Report</strong>.
+        Complete the AI analysis and generate
+        your weekly report.
       </p>
 
     </div>
 
   `;
+
+
+  setAnalysisStatus(
+    "",
+    ""
+  );
+
+}
+
+
+// ============================================
+// COPY REPORT
+// ============================================
+
+async function copyReport() {
+
+  const report =
+    document.getElementById(
+      "reportPreview"
+    );
+
+
+  if (
+    !report ||
+    !report.innerText.trim()
+  ) {
+
+    alert(
+      "There is no report to copy."
+    );
+
+    return;
+  }
+
+
+  try {
+
+    await navigator.clipboard.writeText(
+      report.innerText
+    );
+
+
+    alert(
+      "Report copied to clipboard."
+    );
+
+  } catch (error) {
+
+    alert(
+      "Unable to copy automatically."
+    );
+
+  }
+
+}
+
+
+// ============================================
+// PRINT
+// ============================================
+
+function printReport() {
+
+  const report =
+    document.getElementById(
+      "reportPreview"
+    );
+
+
+  if (
+    !report ||
+    !report.innerText.trim()
+  ) {
+
+    alert(
+      "There is no report to print."
+    );
+
+    return;
+  }
+
+
+  window.print();
+
+}
+
+
+// ============================================
+// STATUS MESSAGE
+// ============================================
+
+function setAnalysisStatus(
+  message,
+  type
+) {
+
+  const status =
+    document.getElementById(
+      "analysisStatus"
+    );
+
+
+  if (!status) {
+    return;
+  }
+
+
+  status.className =
+    "analysis-status " +
+    (type || "");
+
+
+  status.textContent =
+    message || "";
+
+}
+
+
+// ============================================
+// FORMAT TEXT
+// ============================================
+
+function formatReportText(text) {
+
+  return escapeHTML(
+    text
+  ).replace(
+    /\n/g,
+    "<br>"
+  );
+
+}
+
+
+// ============================================
+// ESCAPE HTML
+// ============================================
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 
 }
