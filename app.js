@@ -1,5 +1,10 @@
+// ========================================
+// REL-FA WEEKLY REPORT GENERATOR
+// ========================================
+
+
 // ----------------------------------------
-// INITIALIZE DATE
+// INITIALIZE
 // ----------------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -15,106 +20,292 @@ document.addEventListener("DOMContentLoaded", () => {
     "-" +
     String(today.getDate()).padStart(2, "0");
 
-  dateInput.value = formattedDate;
+  if (dateInput) {
+    dateInput.value = formattedDate;
+  }
 
 });
 
 
 // ----------------------------------------
-// ADD KPI
+// ADD WORK AREA
 // ----------------------------------------
 
-function addKPI() {
+function addWorkArea() {
 
   const container =
-    document.getElementById("kpiContainer");
+    document.getElementById("workAreaContainer");
 
-  const row = document.createElement("div");
+  const number =
+    container.querySelectorAll(".work-area").length + 1;
 
-  row.className = "kpi-row";
+  const article =
+    document.createElement("article");
 
-  row.innerHTML = `
-    <input
-      type="text"
-      class="kpi-name"
-      placeholder="KPI name"
-    >
+  article.className = "work-area";
 
-    <input
-      type="text"
-      class="kpi-value"
-      placeholder="Actual"
-    >
+  article.innerHTML = `
 
-    <input
-      type="text"
-      class="kpi-target"
-      placeholder="Target"
-    >
+    <div class="work-area-header">
+
+      <div class="work-number">
+        ${number}
+      </div>
+
+      <div class="work-title">
+
+        <input
+          class="work-name"
+          value="New REL-FA Work Area"
+        >
+
+      </div>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>KPI Description</label>
+
+      <textarea
+        class="description"
+        placeholder="Enter the KPI / work area description..."
+      ></textarea>
+
+    </div>
+
+
+    <div class="three-column">
+
+      <div class="form-group">
+
+        <label>Deadline</label>
+
+        <select class="deadline">
+
+          <option selected>Weekly</option>
+          <option>Ongoing</option>
+          <option>Custom</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Status</label>
+
+        <select class="status">
+
+          <option value="Green" selected>
+            🟢 Green
+          </option>
+
+          <option value="Yellow">
+            🟡 Yellow
+          </option>
+
+          <option value="Red">
+            🔴 Red
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Priority</label>
+
+        <select class="priority">
+
+          <option selected>P1</option>
+          <option>P2</option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Weekly Activity / Raw Notes</label>
+
+      <textarea
+        class="raw-notes"
+        placeholder="Enter what happened this week..."
+      ></textarea>
+
+    </div>
+
+
+    <div class="three-column">
+
+      <div class="form-group">
+
+        <label>What</label>
+
+        <textarea
+          class="what"
+          placeholder="What was accomplished?"
+        ></textarea>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>How</label>
+
+        <textarea
+          class="how"
+          placeholder="How was it accomplished?"
+        ></textarea>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Next Step</label>
+
+        <textarea
+          class="next-step"
+          placeholder="What happens next?"
+        ></textarea>
+
+      </div>
+
+    </div>
+
 
     <button
-      class="remove-btn"
-      onclick="removeKPI(this)"
-      title="Remove KPI"
+      class="remove-work-area"
+      onclick="removeWorkArea(this)"
     >
-      ×
+      Remove Work Area
     </button>
+
   `;
 
-  container.appendChild(row);
+  container.appendChild(article);
+
+  renumberWorkAreas();
 }
 
 
 // ----------------------------------------
-// REMOVE KPI
+// REMOVE WORK AREA
 // ----------------------------------------
 
-function removeKPI(button) {
+function removeWorkArea(button) {
 
-  const row = button.closest(".kpi-row");
+  const area =
+    button.closest(".work-area");
 
-  if (row) {
-    row.remove();
+  if (!area) {
+    return;
   }
 
+  const confirmed =
+    confirm(
+      "Remove this work area from the report?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  area.remove();
+
+  renumberWorkAreas();
 }
 
 
 // ----------------------------------------
-// GET KPI DATA
+// RENUMBER WORK AREAS
 // ----------------------------------------
 
-function getKPIData() {
+function renumberWorkAreas() {
 
-  const rows =
-    document.querySelectorAll(".kpi-row");
+  const areas =
+    document.querySelectorAll(".work-area");
 
-  const kpis = [];
+  areas.forEach((area, index) => {
 
-  rows.forEach(row => {
+    const number =
+      area.querySelector(".work-number");
 
-    const name =
-      row.querySelector(".kpi-name").value.trim();
-
-    const value =
-      row.querySelector(".kpi-value").value.trim();
-
-    const target =
-      row.querySelector(".kpi-target").value.trim();
-
-    if (name || value || target) {
-
-      kpis.push({
-        name,
-        value,
-        target
-      });
-
+    if (number) {
+      number.textContent = index + 1;
     }
 
   });
 
-  return kpis;
+}
+
+
+// ----------------------------------------
+// GET WORK AREA DATA
+// ----------------------------------------
+
+function getWorkAreaData() {
+
+  const areas =
+    document.querySelectorAll(".work-area");
+
+  const data = [];
+
+  areas.forEach(area => {
+
+    const name =
+      area.querySelector(".work-name")?.value.trim() || "";
+
+    const description =
+      area.querySelector(".description")?.value.trim() || "";
+
+    const deadline =
+      area.querySelector(".deadline")?.value || "";
+
+    const status =
+      area.querySelector(".status")?.value || "";
+
+    const priority =
+      area.querySelector(".priority")?.value || "";
+
+    const rawNotes =
+      area.querySelector(".raw-notes")?.value.trim() || "";
+
+    const what =
+      area.querySelector(".what")?.value.trim() || "";
+
+    const how =
+      area.querySelector(".how")?.value.trim() || "";
+
+    const nextStep =
+      area.querySelector(".next-step")?.value.trim() || "";
+
+
+    data.push({
+      name,
+      description,
+      deadline,
+      status,
+      priority,
+      rawNotes,
+      what,
+      how,
+      nextStep
+    });
+
+  });
+
+  return data;
 }
 
 
@@ -124,35 +315,49 @@ function getKPIData() {
 
 function generateReport() {
 
+  const period =
+    document.getElementById("reportPeriod")
+      ?.value.trim() || "";
+
   const date =
-    document.getElementById("reportDate").value;
+    document.getElementById("reportDate")
+      ?.value || "";
 
   const title =
-    document.getElementById("reportTitle").value.trim();
-
-  const notes =
-    document.getElementById("dailyNotes").value.trim();
-
-  const kpis = getKPIData();
+    document.getElementById("reportTitle")
+      ?.value.trim() || "Weekly Report (REL-FA)";
 
 
-  if (!title) {
-
-    alert("Please enter a report title.");
-
-    return;
-
-  }
+  const workAreas =
+    getWorkAreaData();
 
 
-  if (kpis.length === 0 && !notes) {
+  if (workAreas.length === 0) {
 
     alert(
-      "Please enter at least one KPI or some daily notes."
+      "Please add at least one REL-FA work area."
     );
 
     return;
+  }
 
+
+  const hasContent =
+    workAreas.some(area =>
+      area.rawNotes ||
+      area.what ||
+      area.how ||
+      area.nextStep
+    );
+
+
+  if (!hasContent) {
+
+    alert(
+      "Please enter some weekly activity information before generating the report."
+    );
+
+    return;
   }
 
 
@@ -167,19 +372,72 @@ function generateReport() {
               day: "numeric"
             }
           )
-      : "No date specified";
+      : "";
 
 
-  let kpiRows = "";
+  let tableRows = "";
 
-  kpis.forEach(kpi => {
 
-    kpiRows += `
+  workAreas.forEach((area, index) => {
+
+    const statusClass =
+      getStatusClass(area.status);
+
+
+    const statusText =
+      getStatusText(area.status);
+
+
+    const performance =
+      buildPerformanceHTML(area);
+
+
+    tableRows += `
+
       <tr>
-        <td>${escapeHTML(kpi.name)}</td>
-        <td>${escapeHTML(kpi.value)}</td>
-        <td>${escapeHTML(kpi.target)}</td>
+
+        <td class="report-number">
+          ${index + 1}
+        </td>
+
+
+        <td>
+
+          <strong>
+            ${escapeHTML(area.name)}
+          </strong>
+
+        </td>
+
+
+        <td>
+          ${formatReportText(area.description)}
+        </td>
+
+
+        <td>
+          ${escapeHTML(area.deadline)}
+        </td>
+
+
+        <td class="${statusClass}">
+          ${statusText}
+        </td>
+
+
+        <td>
+          ${escapeHTML(area.priority)}
+        </td>
+
+
+        <td>
+
+          ${performance}
+
+        </td>
+
       </tr>
+
     `;
 
   });
@@ -189,119 +447,309 @@ function generateReport() {
 
     <div class="generated-report">
 
-      <h1>${escapeHTML(title)}</h1>
+
+      <h1>
+        ${escapeHTML(title)}
+      </h1>
+
 
       <div class="report-date">
+
+        ${escapeHTML(period)}
+
+        ${period && formattedDate ? " | " : ""}
+
         ${escapeHTML(formattedDate)}
+
       </div>
 
 
-      <div class="summary-box">
+      <div class="report-summary">
 
-        <strong>Daily Summary</strong>
+        <strong>
+          Weekly Performance Summary
+        </strong>
 
         <p style="margin-top:8px;">
-          This report contains the daily KPI information
-          and operational notes entered for this date.
-          AI analysis will be added in the next stage.
+
+          REL-FA activities, investigation progress,
+          analytical support, coordination activities
+          and follow-up actions for the reporting period.
+
         </p>
 
       </div>
 
 
+      <div class="report-table-wrapper">
+
+        <table class="report-table">
+
+          <thead>
+
+            <tr>
+
+              <th>No.</th>
+
+              <th>
+                KPI / Work Area
+              </th>
+
+              <th>
+                KPI Description
+              </th>
+
+              <th>
+                Deadline
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Priority
+              </th>
+
+              <th>
+                Comment on Weekly Performance
+                – What &amp; How
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            ${tableRows}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
       <div class="report-section">
 
-        <h3>Key Performance Indicators</h3>
+        <h3>
+          Next Steps
+        </h3>
 
-        ${
-          kpis.length > 0
-            ? `
-              <table class="kpi-table">
 
-                <thead>
-                  <tr>
-                    <th>KPI</th>
-                    <th>Actual</th>
-                    <th>Target</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  ${kpiRows}
-                </tbody>
-
-              </table>
-            `
-            : "<p>No KPI data entered.</p>"
-        }
+        ${buildNextStepsHTML(workAreas)}
 
       </div>
 
-
-      <div class="report-section">
-
-        <h3>Daily Notes</h3>
-
-        ${
-          notes
-            ? `
-              <div class="summary-box">
-                ${formatNotes(notes)}
-              </div>
-            `
-            : "<p>No daily notes entered.</p>"
-        }
-
-      </div>
-
-
-      <div class="report-section">
-
-        <h3>AI Analysis</h3>
-
-        <div class="warning">
-
-          AI analysis will be connected in Stage 2.
-
-          The next version will automatically analyze
-          your KPIs and notes and generate:
-
-          <ul>
-            <li>Executive summary</li>
-            <li>Performance analysis</li>
-            <li>Positive highlights</li>
-            <li>Risks and problems</li>
-            <li>Recommendations</li>
-            <li>Priorities for tomorrow</li>
-          </ul>
-
-        </div>
-
-      </div>
 
     </div>
 
   `;
 
 
-  document.getElementById("reportPreview").innerHTML =
-    reportHTML;
+  document.getElementById(
+    "reportPreview"
+  ).innerHTML = reportHTML;
 
 
-  document
-    .getElementById("reportPreview")
-    .scrollIntoView({
-      behavior: "smooth"
-    });
+  document.getElementById(
+    "reportPreview"
+  ).scrollIntoView({
+    behavior: "smooth"
+  });
 
 }
 
 
 // ----------------------------------------
-// FORMAT NOTES
+// BUILD PERFORMANCE HTML
 // ----------------------------------------
 
-function formatNotes(text) {
+function buildPerformanceHTML(area) {
+
+  let html = "";
+
+
+  if (area.what) {
+
+    html += `
+
+      <div class="performance-item">
+
+        <span class="performance-label">
+          What:
+        </span>
+
+        ${formatReportText(area.what)}
+
+      </div>
+
+    `;
+
+  }
+
+
+  if (area.how) {
+
+    html += `
+
+      <div class="performance-item">
+
+        <span class="performance-label">
+          How:
+        </span>
+
+        ${formatReportText(area.how)}
+
+      </div>
+
+    `;
+
+  }
+
+
+  if (area.nextStep) {
+
+    html += `
+
+      <div class="performance-item">
+
+        <span class="performance-label">
+          Next Step:
+        </span>
+
+        ${formatReportText(area.nextStep)}
+
+      </div>
+
+    `;
+
+  }
+
+
+  if (!html && area.rawNotes) {
+
+    html = formatReportText(area.rawNotes);
+
+  }
+
+
+  if (!html) {
+
+    html =
+      "<em>No weekly performance information entered.</em>";
+
+  }
+
+
+  return `<div class="performance-block">${html}</div>`;
+}
+
+
+// ----------------------------------------
+// BUILD NEXT STEPS
+// ----------------------------------------
+
+function buildNextStepsHTML(workAreas) {
+
+  let html = "";
+
+
+  workAreas.forEach((area, index) => {
+
+    if (!area.nextStep) {
+      return;
+    }
+
+
+    html += `
+
+      <div class="performance-item">
+
+        <strong>
+          ${index + 1}. ${escapeHTML(area.name)}
+        </strong>
+
+        <br>
+
+        ${formatReportText(area.nextStep)}
+
+      </div>
+
+    `;
+
+  });
+
+
+  if (!html) {
+
+    html =
+      "<p>No next steps entered.</p>";
+
+  }
+
+
+  return html;
+}
+
+
+// ----------------------------------------
+// STATUS CLASS
+// ----------------------------------------
+
+function getStatusClass(status) {
+
+  switch (status) {
+
+    case "Green":
+      return "status-green";
+
+    case "Yellow":
+      return "status-yellow";
+
+    case "Red":
+      return "status-red";
+
+    default:
+      return "";
+
+  }
+
+}
+
+
+// ----------------------------------------
+// STATUS TEXT
+// ----------------------------------------
+
+function getStatusText(status) {
+
+  switch (status) {
+
+    case "Green":
+      return "🟢 Green";
+
+    case "Yellow":
+      return "🟡 Yellow";
+
+    case "Red":
+      return "🔴 Red";
+
+    default:
+      return escapeHTML(status);
+
+  }
+
+}
+
+
+// ----------------------------------------
+// FORMAT REPORT TEXT
+// ----------------------------------------
+
+function formatReportText(text) {
 
   return escapeHTML(text)
     .replace(/\n/g, "<br>");
@@ -326,57 +774,6 @@ function escapeHTML(value) {
 
 
 // ----------------------------------------
-// CLEAR
-// ----------------------------------------
-
-function clearReport() {
-
-  const confirmed =
-    confirm(
-      "Clear all report information?"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  document.getElementById("reportTitle").value =
-    "Daily Operations Report";
-
-  document.getElementById("dailyNotes").value =
-    "";
-
-  document.getElementById("kpiContainer").innerHTML =
-    "";
-
-
-  addKPI();
-  addKPI();
-  addKPI();
-
-
-  document.getElementById("reportPreview").innerHTML = `
-
-    <div class="empty-state">
-
-      <div class="empty-icon">📊</div>
-
-      <h3>No report generated yet</h3>
-
-      <p>
-        Enter your daily information above and click
-        <strong>Generate Report</strong>.
-      </p>
-
-    </div>
-
-  `;
-
-}
-
-
-// ----------------------------------------
 // COPY REPORT
 // ----------------------------------------
 
@@ -385,12 +782,14 @@ async function copyReport() {
   const report =
     document.getElementById("reportPreview");
 
-  if (!report.innerText.trim()) {
 
-    alert("There is no report to copy.");
+  if (!report || !report.innerText.trim()) {
+
+    alert(
+      "There is no report to copy."
+    );
 
     return;
-
   }
 
 
@@ -400,12 +799,14 @@ async function copyReport() {
       report.innerText
     );
 
-    alert("Report copied to clipboard.");
+    alert(
+      "Report copied to clipboard."
+    );
 
   } catch (error) {
 
     alert(
-      "Unable to copy automatically. Please select and copy the report manually."
+      "Unable to copy automatically. Please copy the report manually."
     );
 
   }
@@ -414,7 +815,7 @@ async function copyReport() {
 
 
 // ----------------------------------------
-// PRINT
+// PRINT / PDF
 // ----------------------------------------
 
 function printReport() {
@@ -422,14 +823,100 @@ function printReport() {
   const report =
     document.getElementById("reportPreview");
 
-  if (!report.innerText.trim()) {
 
-    alert("There is no report to print.");
+  if (!report || !report.innerText.trim()) {
+
+    alert(
+      "There is no report to print."
+    );
 
     return;
-
   }
 
+
   window.print();
+
+}
+
+
+// ----------------------------------------
+// CLEAR REPORT
+// ----------------------------------------
+
+function clearReport() {
+
+  const confirmed =
+    confirm(
+      "Clear all entered weekly information?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  document.getElementById(
+    "reportPeriod"
+  ).value = "WW40";
+
+
+  document.getElementById(
+    "reportTitle"
+  ).value = "Weekly Report (REL-FA)";
+
+
+  const areas =
+    document.querySelectorAll(".work-area");
+
+
+  areas.forEach(area => {
+
+    const rawNotes =
+      area.querySelector(".raw-notes");
+
+    const what =
+      area.querySelector(".what");
+
+    const how =
+      area.querySelector(".how");
+
+    const nextStep =
+      area.querySelector(".next-step");
+
+
+    if (rawNotes) rawNotes.value = "";
+
+    if (what) what.value = "";
+
+    if (how) how.value = "";
+
+    if (nextStep) nextStep.value = "";
+
+  });
+
+
+  document.getElementById(
+    "reportPreview"
+  ).innerHTML = `
+
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        📋
+      </div>
+
+      <h3>
+        No report generated yet
+      </h3>
+
+      <p>
+        Update your weekly activities and click
+        <strong>Generate Report</strong>.
+      </p>
+
+    </div>
+
+  `;
 
 }
