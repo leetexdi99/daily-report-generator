@@ -979,40 +979,170 @@ function addAIButtons() {
 
 async function generateAIForWorkArea(area, button) {
 
-  const originalText = button.textContent;
+  const originalText = "🤖 Generate with AI";
 
   try {
 
     button.disabled = true;
     button.textContent = "🤖 AI is working...";
 
-    // Find fields inside this work area
-    const rawNotes =
-      area.querySelector('[id*="activity"]') ||
-      area.querySelector('[id*="raw"]');
+    // --------------------------------------------
+    // Find the text fields by their position
+    // --------------------------------------------
+    const textareas = area.querySelectorAll("textarea");
 
-    const whatField =
-      area.querySelector('[id*="what"]');
+    /*
+      Expected order in each Work Area:
 
-    const howField =
-      area.querySelector('[id*="how"]');
+      0 = KPI Description
+      1 = Weekly Activity / Raw Notes
+      2 = What
+      3 = How
+      4 = Next Step
+    */
 
-    const nextStepField =
-      area.querySelector('[id*="next"]');
+    if (textareas.length < 5) {
+      throw new Error(
+        "Could not find all REL-FA fields in this Work Area."
+      );
+    }
 
-    // Get KPI / Work Area name
-    const kpiField =
-      area.querySelector('[id*="kpi"]') ||
-      area.querySelector('input[type="text"]');
+    const descriptionField = textareas[0];
+    const rawNotesField = textareas[1];
+    const whatField = textareas[2];
+    const howField = textareas[3];
+    const nextStepField = textareas[4];
 
-    // Get description
-    const descriptionField =
-      area.querySelector('textarea');
+    // --------------------------------------------
+    // Check Raw Notes
+    // --------------------------------------------
+    const rawNotes = rawNotesField.value.trim();
 
-    if (!rawNotes || !rawNotes.value.trim()) {
-      alert("Please enter your Weekly Activity / Raw Notes first.");
+    if (!rawNotes) {
+      alert(
+        "Please enter your Weekly Activity / Raw Notes first."
+      );
       return;
     }
+
+    // --------------------------------------------
+    // Find Work Area name
+    // --------------------------------------------
+    const kpiField =
+      area.querySelector('input[type="text"]');
+
+    const kpi = kpiField
+      ? kpiField.value.trim()
+      : "";
+
+    // --------------------------------------------
+    // Find Status and Priority
+    // --------------------------------------------
+    const selects = area.querySelectorAll("select");
+
+    let status = "";
+    let priority = "";
+
+    selects.forEach(select => {
+
+      const id = (select.id || "").toLowerCase();
+
+      if (id.includes("status")) {
+        status = select.value;
+      }
+
+      if (id.includes("priority")) {
+        priority = select.value;
+      }
+    });
+
+    // Fallback based on the order of the dropdowns
+    if (!status && selects.length >= 2) {
+      status = selects[1].value;
+    }
+
+    if (!priority && selects.length >= 3) {
+      priority = selects[2].value;
+    }
+
+    // --------------------------------------------
+    // Prepare request
+    // --------------------------------------------
+    const payload = {
+      kpi: kpi,
+      description: descriptionField.value,
+      status: status,
+      priority: priority,
+      rawNotes: rawNotes
+    };
+
+    console.log("Sending AI request:", payload);
+
+    // --------------------------------------------
+    // Call Google Apps Script
+    // --------------------------------------------
+    const response = await fetch(AI_BACKEND_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        "Backend returned HTTP " + response.status
+      );
+    }
+
+    const data = await response.json();
+
+    console.log("AI response:", data);
+
+    if (!data.success) {
+      throw new Error(
+        data.error || "AI request failed."
+      );
+    }
+
+    // --------------------------------------------
+    // Put AI results into the form
+    // --------------------------------------------
+    whatField.value =
+      data.result.what || "";
+
+    howField.value =
+      data.result.how || "";
+
+    nextStepField.value =
+      data.result.nextStep || "";
+
+    // --------------------------------------------
+    // Success
+    // --------------------------------------------
+    button.textContent = "✅ AI Generated";
+
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2500);
+
+  } catch (error) {
+
+    console.error("AI Error:", error);
+
+    alert(
+      "AI generation failed:\n\n" +
+      error.message
+    );
+
+    button.textContent = originalText;
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+}
 
     // Find status and priority
     const selects = area.querySelectorAll("select");
