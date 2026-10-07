@@ -986,26 +986,226 @@ async function generateAIForWorkArea(area, button) {
     button.disabled = true;
     button.textContent = "🤖 AI is working...";
 
+    // Find textarea based on the label above it
+    function findField(labelText) {
+
+      const labels = area.querySelectorAll("label");
+
+      for (const label of labels) {
+
+        if (
+          label.textContent
+            .trim()
+            .toLowerCase()
+            .includes(labelText.toLowerCase())
+        ) {
+
+          const forId = label.getAttribute("for");
+
+          if (forId) {
+            const field = document.getElementById(forId);
+
+            if (field) {
+              return field;
+            }
+          }
+
+          const field = label.parentElement
+            ? label.parentElement.querySelector("textarea")
+            : null;
+
+          if (field) {
+            return field;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    // Find the actual fields
+    const rawNotesField = findField(
+      "Weekly Activity / Raw Notes"
+    );
+
+    const descriptionField = findField(
+      "KPI Description"
+    );
+
+    const whatField = findField("What");
+
+    const howField = findField("How");
+
+    const nextStepField = findField("Next Step");
+
     // --------------------------------------------
-    // Find the text fields by their position
+    // Safety check
     // --------------------------------------------
-    const textareas = area.querySelectorAll("textarea");
 
-    /*
-      Expected order in each Work Area:
-
-      0 = KPI Description
-      1 = Weekly Activity / Raw Notes
-      2 = What
-      3 = How
-      4 = Next Step
-    */
-
-    if (textareas.length < 5) {
+    if (!rawNotesField) {
       throw new Error(
-        "Could not find all REL-FA fields in this Work Area."
+        "Could not find the Weekly Activity / Raw Notes field."
       );
     }
+
+    const rawNotes = rawNotesField.value.trim();
+
+    if (!rawNotes) {
+      alert(
+        "Please enter your Weekly Activity / Raw Notes first."
+      );
+      return;
+    }
+
+    // --------------------------------------------
+    // Work Area name
+    // --------------------------------------------
+
+    const inputs = area.querySelectorAll(
+      'input[type="text"]'
+    );
+
+    let kpi = "";
+
+    if (inputs.length > 0) {
+      kpi = inputs[0].value.trim();
+    }
+
+    // --------------------------------------------
+    // Status and Priority
+    // --------------------------------------------
+
+    const selects = area.querySelectorAll("select");
+
+    let status = "";
+    let priority = "";
+
+    selects.forEach(select => {
+
+      const id =
+        (select.id || "").toLowerCase();
+
+      const name =
+        (select.name || "").toLowerCase();
+
+      if (
+        id.includes("status") ||
+        name.includes("status")
+      ) {
+        status = select.value;
+      }
+
+      if (
+        id.includes("priority") ||
+        name.includes("priority")
+      ) {
+        priority = select.value;
+      }
+    });
+
+    // --------------------------------------------
+    // Send to Gemini backend
+    // --------------------------------------------
+
+    const payload = {
+      kpi: kpi,
+      description: descriptionField
+        ? descriptionField.value
+        : "",
+      status: status,
+      priority: priority,
+      rawNotes: rawNotes
+    };
+
+    console.log(
+      "REL-FA AI request:",
+      payload
+    );
+
+    const response = await fetch(
+      AI_BACKEND_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Backend returned HTTP " +
+        response.status
+      );
+    }
+
+    const data = await response.json();
+
+    console.log(
+      "REL-FA AI response:",
+      data
+    );
+
+    if (!data.success) {
+      throw new Error(
+        data.error ||
+        "AI request failed."
+      );
+    }
+
+    // --------------------------------------------
+    // Fill What / How / Next Step
+    // --------------------------------------------
+
+    if (whatField) {
+      whatField.value =
+        data.result.what || "";
+    }
+
+    if (howField) {
+      howField.value =
+        data.result.how || "";
+    }
+
+    if (nextStepField) {
+      nextStepField.value =
+        data.result.nextStep || "";
+    }
+
+    // --------------------------------------------
+    // Success
+    // --------------------------------------------
+
+    button.textContent =
+      "✅ AI Generated";
+
+    setTimeout(() => {
+      button.textContent =
+        originalText;
+    }, 2500);
+
+  } catch (error) {
+
+    console.error(
+      "REL-FA AI Error:",
+      error
+    );
+
+    alert(
+      "AI generation failed:\n\n" +
+      error.message
+    );
+
+    button.textContent =
+      originalText;
+
+  } finally {
+
+    button.disabled = false;
+  }
+}
 
     const descriptionField = textareas[0];
     const rawNotesField = textareas[1];
